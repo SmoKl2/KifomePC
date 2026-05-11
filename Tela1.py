@@ -42,12 +42,12 @@ btn1.place(relx=0.25, rely=0.5, anchor="center")
 btn2 = ctk.CTkButton(app, image=img2, text="", fg_color="transparent",
                      hover_color="#555555", width=50, height=50, command=acao_2)
 btn2.pack(pady=20)
-btn2.place(relx=0.2, rely=0.5, anchor="center")
+btn2.place(relx=0.5, rely=0.5, anchor="center")
 
 btn3 = ctk.CTkButton(app, image=img3, text="", fg_color="transparent",
                      hover_color="#555555", width=50, height=50, command=acao_3)
 btn3.pack(pady=20)
-btn3.place(relx=0.4, rely=0.5, anchor="center")
+btn3.place(relx=0.8, rely=0.5, anchor="center")
 
 #Imagem Nome Kifome
 
@@ -62,6 +62,6 @@ label_imagem = ctk.CTkLabel(
     image=imagem,
     text=""  # vazio pra não aparecer texto junto
 )
-label_imagem.place(relx=0.1, rely=0.5, anchor="center")  # posição na tela
+label_imagem.place(relx=0.3, rely=0.2, anchor="center")  # posição na tela
 
 app.mainloop()
