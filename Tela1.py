@@ -1,66 +1,67 @@
-import tkinter as tk
-from PIL import Image, ImageTk
 import customtkinter as ctk
+from PIL import Image
+import os
 
-#Código Janela
+# Código Janela
 
-janela = tk.Tk()
-janela.title("Tela1")
-janela.geometry("1280x720")
-janela.configure(bg="#FCB57D")
+ctk.set_appearance_mode("Dark")  # Modo escuro
+app = ctk.CTk()
+app.geometry("1280x720")
+app.title("Botões Transparentes")
+app.configure(fg_color="#FCB57D")
 
-#Código Imagem Menu
+#Código adicionar botões e suas imagens
+script_dir = os.path.dirname(__file__)
+img1_path = os.path.join(script_dir, "assets", r"D:\Programacao\KifomePC\Imagens\Menu.png")
+img2_path = os.path.join(script_dir, "assets", r"D:\Programacao\KifomePC\Imagens\Carrinho.png")
+img3_path = os.path.join(script_dir, "assets", r"D:\Programacao\KifomePC\Imagens\Configurações.png")
 
-imagem_original = Image.open(r"D:\Programacao\KifomePC\Imagens\Menu.png")
-imagem_original = imagem_original.resize((485, 385))
-imagem_botao = ImageTk.PhotoImage(imagem_original)
+# Carregar e redimensionar a imagem
+img1 = ctk.CTkImage(light_image=Image.open(img1_path), size=(385, 185))
+img2 = ctk.CTkImage(light_image=Image.open(img2_path), size=(385, 185))
+img3 = ctk.CTkImage(light_image=Image.open(img3_path), size=(385, 185))
 
-def clicar():
-    print("Botão clicado!")
+#Funções dos botões
+def acao_1():
+    print("Botão 1 pressionado")
 
-botao = tk.Button(
-janela, image=imagem_botao, command=clicar, bd=0, cursor="hand2"
+def acao_2():
+    print("Botão 2 pressionado")
 
+def acao_3():
+    print("Botão 3 pressionado")
+
+#Criar botões
+# fg_color="transparent" remove a cor de fundo do botão
+# text="" remove o texto padrão
+btn1 = ctk.CTkButton(app, image=img1, text="", fg_color="transparent",
+                     hover_color="#555555", width=50, height=50, command=acao_1)
+btn1.pack(pady=20)
+btn1.place(relx=0.25, rely=0.5, anchor="center")
+
+btn2 = ctk.CTkButton(app, image=img2, text="", fg_color="transparent",
+                     hover_color="#555555", width=50, height=50, command=acao_2)
+btn2.pack(pady=20)
+btn2.place(relx=0.2, rely=0.5, anchor="center")
+
+btn3 = ctk.CTkButton(app, image=img3, text="", fg_color="transparent",
+                     hover_color="#555555", width=50, height=50, command=acao_3)
+btn3.pack(pady=20)
+btn3.place(relx=0.4, rely=0.5, anchor="center")
+
+#Imagem Nome Kifome
+
+imagem = ctk.CTkImage(
+    light_image=Image.open(r"D:\Programacao\KifomePC\Imagens\nome kifome.png"),  # modo claro
+    dark_image=Image.open(r"D:\Programacao\KifomePC\Imagens\nome kifome.png"),   # modo escuro, pode ser a mesma
+    size=(300, 150)  # tamanho que vai aparecer na tela
 )
-botao.pack(pady=50)
-botao.place(x=100, y=150)
-botao.image = imagem_botao
 
-# Código Imagem Carrinho
-
-imagem_original = Image.open(r"D:\Programacao\KifomePC\Imagens\Carrinho.png")
-imagem_original = imagem_original.resize((485, 385))
-imagem_botao = ImageTk.PhotoImage(imagem_original)
-
-
-def clicar():
-    print("Botão clicado!")
-
-botao = tk.Button(
-    janela, image=imagem_botao, command=clicar, bd=0, cursor="hand2"
-
+label_imagem = ctk.CTkLabel(
+    app,
+    image=imagem,
+    text=""  # vazio pra não aparecer texto junto
 )
-botao.pack(pady=50)
-botao.place(x=600, y=150)
-botao.image = imagem_botao
+label_imagem.place(relx=0.1, rely=0.5, anchor="center")  # posição na tela
 
-# Código Imagem Configurações
-
-imagem_original = Image.open(r"D:\Programacao\KifomePC\Imagens\Configurações.png")
-imagem_original = imagem_original.resize((485, 385))
-imagem_botao = ImageTk.PhotoImage(imagem_original)
-
-
-def clicar():
-    print("Botão clicado!")
-
-botao = tk.Button(
-    janela, image=imagem_botao, command=clicar, bd=0, cursor="hand2"
-
-)
-botao.pack(pady=50)
-botao.place(x=1100, y=150)
-botao.image = imagem_botao
-
-
-janela.mainloop()
+app.mainloop()
