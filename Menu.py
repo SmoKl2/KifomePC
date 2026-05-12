@@ -1,50 +1,70 @@
-import customtkinter as ctk
-from PIL import Image
+import tkinter as tk
+from PIL import Image, ImageTk
 import os
 
 # Código Janela
 
-ctk.set_appearance_mode("Dark")  # Modo escuro
-app = ctk.CTk()
-app.geometry("1280x720")
-app.title("Botões Transparentes")
-app.configure(fg_color="#FCB57D")
-app.title("Kifome")
-app.iconbitmap(r"D:\Programacao\KifomePC\Imagens\Logo.ico")
+janela = tk.Tk()
+janela.title("Tela1")
+janela.geometry("1280x720")
+janela.configure(bg="#FCB57D")
+janela.title("Kifome")
+janela.iconbitmap(r"D:\Programacao\KifomePC\Imagens\Logo.ico")
 
-#Imagem Nome Kifome
+#Código nome kifome
 
-imagem = ctk.CTkImage(
-    light_image=Image.open(r"D:\Programacao\KifomePC\Imagens\nome kifome.png"),  # modo claro
-    dark_image=Image.open(r"D:\Programacao\KifomePC\Imagens\nome kifome.png"),   # modo escuro, pode ser a mesma
-    size=(600, 220)  # tamanho que vai aparecer na tela
+img = Image.open(r"D:\Programacao\KifomePC\Imagens\nome kifome.png")
+img_redimensionada = img.resize((600, 220))  # largura, altura
+img_tk = ImageTk.PhotoImage(img_redimensionada)
+
+label = tk.Label(
+    janela,
+    image=img_tk,
+    bg=janela.cget("bg")
 )
+label.image = img_tk
+label.place(relx=0.5, rely=0.16, anchor="center")
 
-label_imagem = ctk.CTkLabel(
-    app,
-    image=imagem,
-    text=""  # vazio pra não aparecer texto junto
-)
-label_imagem.place(relx=0.55, rely=0.16, anchor="center")  # posição na tela
 
-# Frame = borda branca rodapé
-borda_branca = ctk.CTkFrame(
-    app,
-    height=40,           # espessura da borda
-    fg_color="white",   # cor branca
-    corner_radius=0     # sem canto arredondado
-)
-borda_branca.place(relx=0, rely=1.0, relwidth=1.0, anchor="sw")
+# BORDA BRANCA NO RODAPÉ
+rodape = tk.Frame(janela, bg="white", height=55)
+rodape.pack(side="bottom", fill="x")  # fill="x" = estica na horizontal toda
 
-# Texto ALPHA VERSION 1.0
-nome = ctk.CTkLabel(
-    app,
+#Texto ALPHA VERSION
+
+texto = tk.Label(
+    janela,
     text="ALPHA VERSION 1.0",
-    font=("Dubai", 20, "bold"),
-    text_color="black",
-    fg_color="white"
+    bg="#FEFEFE",
+    fg="Black",
+    font=("Dubai", 30, "bold"),
+    padx=0,
+    pady=0
 )
-nome.place(relx=0.05, rely=1.008, y=-10, anchor="s")  # y=-10 sobe 10px do fundo
+texto.place(relx=0.1, rely=0.98, anchor="center")
+
+#Código botão Voltar
+
+imagem_original = Image.open(r"D:\Programacao\KifomePC\Imagens\voltar.png").convert("RGBA")
+imagem_original = imagem_original.resize((60, 60))
+imagem_botao = ImageTk.PhotoImage(imagem_original)
+
+def clicar():
+    print("Botão clicado!")
+
+botao = tk.Button(
+    janela,
+    image=imagem_botao,
+    command=clicar,
+    borderwidth=0,           # tira borda
+    highlightthickness=0,    # tira contorno de foco
+    bg=janela.cget("bg"),  # fundo igual da janela
+    activebackground=janela.cget("bg"),  # não pisca quando clica
+    relief="flat",           # tira efeito 3D
+    cursor="hand2"
+)
+botao.image = imagem_botao
+botao.place(relx=0.025, rely=0.05, anchor="center")  # responsivo
 
 
-app.mainloop()
+janela.mainloop()

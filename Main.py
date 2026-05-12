@@ -1,87 +1,114 @@
-import customtkinter as ctk
-from PIL import Image
+import tkinter as tk
+from PIL import Image, ImageTk
 import os
 
 # Código Janela
 
-ctk.set_appearance_mode("Dark")  # Modo escuro
-app = ctk.CTk()
-app.geometry("1280x720")
-app.configure(fg_color="#FCB57D")
-app.title("Kifome")
-app.iconbitmap(r"D:\Programacao\KifomePC\Imagens\Logo.ico")
+janela = tk.Tk()
+janela.title("Tela1")
+janela.geometry("1280x720")
+janela.configure(bg="#FCB57D")
+janela.title("Kifome")
+janela.iconbitmap(r"D:\Programacao\KifomePC\Imagens\Logo.ico")
 
-#Código adicionar botões e suas imagens
-script_dir = os.path.dirname(__file__)
-img1_path = os.path.join(script_dir, "assets", r"D:\Programacao\KifomePC\Imagens\Menu.png")
-img2_path = os.path.join(script_dir, "assets", r"D:\Programacao\KifomePC\Imagens\Carrinho.png")
-img3_path = os.path.join(script_dir, "assets", r"D:\Programacao\KifomePC\Imagens\Configurações.png")
+#Código nome kifome
 
-# Carregar e redimensionar a imagem
-img1 = ctk.CTkImage(light_image=Image.open(img1_path), size=(585, 500))
-img2 = ctk.CTkImage(light_image=Image.open(img2_path), size=(585, 500))
-img3 = ctk.CTkImage(light_image=Image.open(img3_path), size=(585, 500))
+img = Image.open(r"D:\Programacao\KifomePC\Imagens\nome kifome.png")
+img_redimensionada = img.resize((600, 220))  # largura, altura
+img_tk = ImageTk.PhotoImage(img_redimensionada)
 
-#Funções dos botões
-def acao_1():
-    print("Botão 1 pressionado")
-
-def acao_2():
-    print("Botão 2 pressionado")
-
-def acao_3():
-    print("Botão 3 pressionado")
-
-#Criar botões
-# fg_color="transparent" remove a cor de fundo do botão
-# text="" remove o texto padrão
-btn1 = ctk.CTkButton(app, image=img1, text="", fg_color="transparent",
-                     hover_color="#555555", width=50, height=50, command=acao_1)
-btn1.pack(pady=20)
-btn1.place(relx=0.17, rely=0.6, anchor="center")
-
-btn2 = ctk.CTkButton(app, image=img2, text="", fg_color="transparent",
-                     hover_color="#555555", width=50, height=50, command=acao_2)
-btn2.pack(pady=20)
-btn2.place(relx=0.497, rely=0.6, anchor="center")
-
-btn3 = ctk.CTkButton(app, image=img3, text="", fg_color="transparent",
-                     hover_color="#555555", width=50, height=50, command=acao_3)
-btn3.pack(pady=20)
-btn3.place(relx=0.825, rely=0.6, anchor="center")
-
-#Imagem Nome Kifome
-
-imagem = ctk.CTkImage(
-    light_image=Image.open(r"D:\Programacao\KifomePC\Imagens\nome kifome.png"),  # modo claro
-    dark_image=Image.open(r"D:\Programacao\KifomePC\Imagens\nome kifome.png"),   # modo escuro, pode ser a mesma
-    size=(600, 220)  # tamanho que vai aparecer na tela
+label = tk.Label(
+    janela,
+    image=img_tk,
+    bg=janela.cget("bg")
 )
+label.image = img_tk
+label.place(relx=0.5, rely=0.16, anchor="center")
 
-label_imagem = ctk.CTkLabel(
-    app,
-    image=imagem,
-    text=""  # vazio pra não aparecer texto junto
+#Código botão Menu
+
+imagem_original = Image.open(r"D:\Programacao\KifomePC\Imagens\Menu.png").convert("RGBA")
+imagem_original = imagem_original.resize((585, 500))
+imagem_botao = ImageTk.PhotoImage(imagem_original)
+
+def clicar():
+    print("Botão clicado!")
+
+botao = tk.Button(
+    janela,
+    image=imagem_botao,
+    command=clicar,
+    borderwidth=0,           # tira borda
+    highlightthickness=0,    # tira contorno de foco
+    bg=janela.cget("bg"),    # fundo igual da janela
+    activebackground=janela.cget("bg"),  # não pisca quando clica
+    relief="flat",           # tira efeito 3D
+    cursor="hand2"
 )
-label_imagem.place(relx=0.5, rely=0.16, anchor="center")  # posição na tela
+botao.image = imagem_botao
+botao.place(relx=0.17, rely=0.6, anchor="center")  # responsivo
 
-# Frame = borda branca rodapé
-borda_branca = ctk.CTkFrame(
-    app,
-    height=40,           # espessura da borda
-    fg_color="white",   # cor branca
-    corner_radius=0     # sem canto arredondado
+#Código botão Carrinho
+
+imagem_original = Image.open(r"D:\Programacao\KifomePC\Imagens\Carrinho.png").convert("RGBA")
+imagem_original = imagem_original.resize((585, 500))
+imagem_botao = ImageTk.PhotoImage(imagem_original)
+
+def clicar():
+    print("Botão clicado!")
+
+botao = tk.Button(
+    janela,
+    image=imagem_botao,
+    command=clicar,
+    borderwidth=0,           # tira borda
+    highlightthickness=0,    # tira contorno de foco
+    bg=janela.cget("bg"),    # fundo igual da janela
+    activebackground=janela.cget("bg"),  # não pisca quando clica
+    relief="flat",           # tira efeito 3D
+    cursor="hand2"
 )
-borda_branca.place(relx=0, rely=1.0, relwidth=1.0, anchor="sw")
+botao.image = imagem_botao
+botao.place(relx=0.497, rely=0.6, anchor="center")  # responsivo
 
-# Texto ALPHA VERSION 1.0
-nome = ctk.CTkLabel(
-    app,
+#Código botão Configurações
+
+imagem_original = Image.open(r"D:\Programacao\KifomePC\Imagens\Configurações.png").convert("RGBA")
+imagem_original = imagem_original.resize((585, 500))
+imagem_botao = ImageTk.PhotoImage(imagem_original)
+
+def clicar():
+    print("Botão clicado!")
+
+botao = tk.Button(
+    janela,
+    image=imagem_botao,
+    command=clicar,
+    borderwidth=0,           # tira borda
+    highlightthickness=0,    # tira contorno de foco
+    bg=janela.cget("bg"),    # fundo igual da janela
+    activebackground=janela.cget("bg"),  # não pisca quando clica
+    relief="flat",           # tira efeito 3D
+    cursor="hand2"
+)
+botao.image = imagem_botao
+botao.place(relx=0.825, rely=0.6, anchor="center")  # responsivo
+
+# BORDA BRANCA NO RODAPÉ
+rodape = tk.Frame(janela, bg="white", height=55)
+rodape.pack(side="bottom", fill="x")  # fill="x" = estica na horizontal toda
+
+#Texto ALPHA VERSION
+
+texto = tk.Label(
+    janela,
     text="ALPHA VERSION 1.0",
-    font=("Dubai", 20, "bold"),
-    text_color="black",
-    fg_color="white"
+    bg="#FEFEFE",
+    fg="Black",
+    font=("Dubai", 30, "bold"),
+    padx=0,
+    pady=0
 )
-nome.place(relx=0.05, rely=1.008, y=-10, anchor="s")  # y=-10 sobe 10px do fundo
+texto.place(relx=0.1, rely=0.98, anchor="center")
 
-app.mainloop()
+janela.mainloop()
