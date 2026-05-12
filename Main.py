@@ -7,7 +7,6 @@ import os
 ctk.set_appearance_mode("Dark")  # Modo escuro
 app = ctk.CTk()
 app.geometry("1280x720")
-app.title("Botões Transparentes")
 app.configure(fg_color="#FCB57D")
 app.title("Kifome")
 app.iconbitmap(r"D:\Programacao\KifomePC\Imagens\Logo.ico")
