@@ -43,8 +43,9 @@ botao = tk.Button(
     bg=janela.cget("bg"),    # fundo igual da janela
     activebackground=janela.cget("bg"),  # não pisca quando clica
     relief="flat",           # tira efeito 3D
-    cursor="hand2"
+    cursor="hand2",
 )
+
 botao.image = imagem_botao
 botao.place(relx=0.17, rely=0.6, anchor="center")  # responsivo
 
