@@ -2,69 +2,36 @@ import tkinter as tk
 from PIL import Image, ImageTk
 import os
 
-# Código Janela
+def montar_tela(frame, voltar, janela_principal):
 
-janela = tk.Tk()
-janela.title("Tela1")
-janela.geometry("1280x720")
-janela.configure(bg="#FCB57D")
-janela.title("Kifome")
-janela.iconbitmap(r"D:\Programacao\KifomePC\Imagens\Logo.ico")
+    cor_fundo = janela_principal.cget("bg")
 
 #Código nome kifome
+    caminho_imagem = r"Imagens\nome kifome.png"  # Troca pelo teu caminho
 
-img = Image.open(r"D:\Programacao\KifomePC\Imagens\nome kifome.png")
-img_redimensionada = img.resize((600, 220))  # largura, altura
-img_tk = ImageTk.PhotoImage(img_redimensionada)
+    if os.path.exists(caminho_imagem):
+        try:
+            # 1. Abre e redimensiona
+            img_original = Image.open(caminho_imagem).convert("RGBA")
+            img_original = img_original.resize((600, 220))  # Tamanho que quiser
 
-label = tk.Label(
-    janela,
-    image=img_tk,
-    bg=janela.cget("bg")
-)
-label.image = img_tk
-label.place(relx=0.5, rely=0.16, anchor="center")
+            # 2. Converte pra PhotoImage
+            img_tk = ImageTk.PhotoImage(img_original)
 
+            # 3. Cria Label com a imagem
+            label_img = tk.Label(frame, image=img_tk, bg="#2d2d2d")
+            label_img.image = img_tk  # IMPORTANTE: guarda referência pra não sumir
+            label_img.pack(pady=15)
+            label_img.place(relx=0.5, rely=0.16, anchor="center")
 
-# BORDA BRANCA NO RODAPÉ
-rodape = tk.Frame(janela, bg="white", height=55)
-rodape.pack(side="bottom", fill="x")  # fill="x" = estica na horizontal toda
+        except Exception as e:
+            tk.Label(frame, text=f"Erro ao carregar imagem: {e}", fg="red", bg="#2d2d2d").pack()
+    else:
+        tk.Label(frame, text="Imagem não encontrada", fg="red", bg="#2d2d2d").pack()
 
-#Texto ALPHA VERSION
-
-texto = tk.Label(
-    janela,
-    text="ALPHA VERSION 1.0",
-    bg="#FEFEFE",
-    fg="Black",
-    font=("Dubai", 30, "bold"),
-    padx=0,
-    pady=0
-)
-texto.place(relx=0.1, rely=0.98, anchor="center")
-
-#Código botão Voltar
-
-imagem_original = Image.open(r"D:\Programacao\KifomePC\Imagens\voltar.png").convert("RGBA")
-imagem_original = imagem_original.resize((60, 60))
-imagem_botao = ImageTk.PhotoImage(imagem_original)
-
-def clicar():
-    print("Botão clicado!")
-
-botao = tk.Button(
-    janela,
-    image=imagem_botao,
-    command=clicar,
-    borderwidth=0,           # tira borda
-    highlightthickness=0,    # tira contorno de foco
-    bg=janela.cget("bg"),  # fundo igual da janela
-    activebackground=janela.cget("bg"),  # não pisca quando clica
-    relief="flat",           # tira efeito 3D
-    cursor="hand2"
-)
-botao.image = imagem_botao
-botao.place(relx=0.025, rely=0.05, anchor="center")  # responsivo
-
-
-janela.mainloop()
+    tk.Button(
+        frame,
+        text="Voltar pro Menu",
+        font=("Arial", 14),
+        command=voltar
+    ).pack(pady=20)
