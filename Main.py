@@ -13,6 +13,7 @@ janela.title("Kifome")
 janela.iconbitmap(r"Imagens\Logo.ico")
 
 #Adaptar Resolução
+
 largura_tela = janela.winfo_screenwidth()
 altura_tela = janela.winfo_screenheight()
 janela.geometry(f"{largura_tela}x{altura_tela}+0+0")
@@ -20,11 +21,13 @@ janela.state('zoomed')  # Maximiza no Windows
 janela.configure(bg="#FCB57D")
 
 #Escala proporcional baseada na resolução
+
 escala_w = largura_tela / 1920  # Base 1920px
 escala_h = altura_tela / 1080   # Base 1080px
 escala = min(escala_w, escala_h)  # Mantém proporção
 
-# Container que vai segurar todas as telas
+#Container que vai segurar todas as telas
+
 container = tk.Frame(janela, bg="#FCB57D")
 container.pack(fill="both", expand=True)
 container.grid_rowconfigure(0, weight=1)
@@ -37,6 +40,7 @@ tela_nova = tk.Frame(container, bg="#2d2d2d")
 tela_nova.grid(row=0, column=0, sticky="nsew")
 
 #Código nome kifome
+
 imagem_original = Image.open(r"Imagens\nome kifome.png").convert("RGBA")
 imagem_original = imagem_original.resize((600, 220))
 imagem_menu = ImageTk.PhotoImage(imagem_original)
@@ -67,11 +71,11 @@ def abrir_tela_nova():
         modulo = importlib.util.module_from_spec(spec)
         spec.loader.exec_module(modulo)
 
-        # Passa: frame, função de voltar, e a janela principal se precisar
+        #Passa: frame, função de voltar e a janela principal
         modulo.montar_tela(
             frame=tela_nova,
             voltar=lambda: tela_menu.tkraise(),
-            janela_principal=janela  # Se precisar usar janela.cget() etc
+            janela_principal=janela
         )
 
     except Exception as e:
@@ -105,17 +109,17 @@ def abrir_tela_nova():
 
     tela_nova.tkraise()
 
-    caminho = r"Menu.py"
+    caminho = r"Carrinho.py"
 
     try:
-        if "Menu" in sys.modules:
-            del sys.modules["Menu"]
+        if "Carrinho" in sys.modules:
+            del sys.modules["Carrinho"]
 
-        spec = importlib.util.spec_from_file_location("Menu", caminho)
+        spec = importlib.util.spec_from_file_location("Carrinho", caminho)
         modulo = importlib.util.module_from_spec(spec)
         spec.loader.exec_module(modulo)
 
-        # Passa: frame, função de voltar, e a janela principal se precisar
+        #Passa: frame, função de voltar e a janela principal
         modulo.montar_tela(
             frame=tela_nova,
             voltar=lambda: tela_menu.tkraise(),
@@ -153,17 +157,17 @@ def abrir_tela_nova():
 
     tela_nova.tkraise()
 
-    caminho = r"Menu.py"
+    caminho = r"Configuracoes.py"
 
     try:
-        if "Menu" in sys.modules:
-            del sys.modules["Menu"]
+        if "Configuracoes" in sys.modules:
+            del sys.modules["Configuracoes"]
 
-        spec = importlib.util.spec_from_file_location("Menu", caminho)
+        spec = importlib.util.spec_from_file_location("Configuracoes", caminho)
         modulo = importlib.util.module_from_spec(spec)
         spec.loader.exec_module(modulo)
 
-        # Passa: frame, função de voltar, e a janela principal se precisar
+        #Passa: frame, função de voltar e a janela principal
         modulo.montar_tela(
             frame=tela_nova,
             voltar=lambda: tela_menu.tkraise(),
@@ -193,7 +197,8 @@ botao.place(relx=0.825, rely=0.6, anchor="center")
 
 tela_menu.tkraise()
 
-# BORDA BRANCA NO RODAPÉ
+#Borda branca rodapé
+
 rodape = tk.Frame(janela, bg="white", height=55)
 rodape.pack(side="bottom", fill="x")  # fill="x" = estica na horizontal toda
 
@@ -204,10 +209,10 @@ texto = tk.Label(
     text="ALPHA VERSION 1.0",
     bg="#FEFEFE",
     fg="Black",
-    font=("Dubai", 30, "bold"),
+    font=("Dubai", 20, "bold"),
     padx=0,
     pady=0
 )
-texto.place(relx=0.1, rely=0.98, anchor="center")
+texto.place(relx=0.07, rely=0.977, anchor="center")
 
 janela.mainloop()
