@@ -2,7 +2,6 @@ import tkinter as tk
 from PIL import Image, ImageTk
 import importlib.util
 import sys
-import os
 
 # Código Janela
 
@@ -13,8 +12,20 @@ janela.configure(bg="#FCB57D")
 janela.title("Kifome")
 janela.iconbitmap(r"Imagens\Logo.ico")
 
-# Container que vai segurar todas as telas no mesmo lugar
-container = tk.Frame(janela, bg="#1e1e1e")
+#Adaptar Resolução
+largura_tela = janela.winfo_screenwidth()
+altura_tela = janela.winfo_screenheight()
+janela.geometry(f"{largura_tela}x{altura_tela}+0+0")
+janela.state('zoomed')  # Maximiza no Windows
+janela.configure(bg="#FCB57D")
+
+#Escala proporcional baseada na resolução
+escala_w = largura_tela / 1920  # Base 1920px
+escala_h = altura_tela / 1080   # Base 1080px
+escala = min(escala_w, escala_h)  # Mantém proporção
+
+# Container que vai segurar todas as telas
+container = tk.Frame(janela, bg="#FCB57D")
 container.pack(fill="both", expand=True)
 container.grid_rowconfigure(0, weight=1)
 container.grid_columnconfigure(0, weight=1)
@@ -66,7 +77,6 @@ def abrir_tela_nova():
     except Exception as e:
         tk.Label(tela_nova, text=f"Erro: {e}", fg="red", bg="#2d2d2d").pack()
 
-
 imagem_original = Image.open(r"Imagens\Menu.png").convert("RGBA")
 imagem_original = imagem_original.resize((585, 500))
 imagem_botao = ImageTk.PhotoImage(imagem_original)
@@ -89,49 +99,99 @@ tela_menu.tkraise()
 
 #Código botão Carrinho
 
+def abrir_tela_nova():
+    for widget in tela_nova.winfo_children():
+        widget.destroy()
+
+    tela_nova.tkraise()
+
+    caminho = r"Menu.py"
+
+    try:
+        if "Menu" in sys.modules:
+            del sys.modules["Menu"]
+
+        spec = importlib.util.spec_from_file_location("Menu", caminho)
+        modulo = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(modulo)
+
+        # Passa: frame, função de voltar, e a janela principal se precisar
+        modulo.montar_tela(
+            frame=tela_nova,
+            voltar=lambda: tela_menu.tkraise(),
+            janela_principal=janela  # Se precisar usar janela.cget() etc
+        )
+
+    except Exception as e:
+        tk.Label(tela_nova, text=f"Erro: {e}", fg="red", bg="#2d2d2d").pack()
+
 imagem_original = Image.open(r"Imagens\Carrinho.png").convert("RGBA")
 imagem_original = imagem_original.resize((585, 500))
 imagem_botao = ImageTk.PhotoImage(imagem_original)
 
-def clicar():
-    print("Botão clicado!")
-
 botao = tk.Button(
-    janela,
+    tela_menu,
     image=imagem_botao,
-    command=clicar,
-    borderwidth=0,           # tira borda
-    highlightthickness=0,    # tira contorno de foco
-    bg=janela.cget("bg"),    # fundo igual da janela
-    activebackground=janela.cget("bg"),  # não pisca quando clica
-    relief="flat",           # tira efeito 3D
-    cursor="hand2"
+    command=abrir_tela_nova,
+    borderwidth=0,
+    highlightthickness=0,
+    bg=janela.cget("bg"),
+    activebackground=janela.cget("bg"),
+    relief="flat",
+    cursor="hand2",
 )
 botao.image = imagem_botao
-botao.place(relx=0.497, rely=0.6, anchor="center")  # responsivo
+botao.place(relx=0.497, rely=0.6, anchor="center")
+
+tela_menu.tkraise()
 
 #Código botão Configurações
+
+def abrir_tela_nova():
+    for widget in tela_nova.winfo_children():
+        widget.destroy()
+
+    tela_nova.tkraise()
+
+    caminho = r"Menu.py"
+
+    try:
+        if "Menu" in sys.modules:
+            del sys.modules["Menu"]
+
+        spec = importlib.util.spec_from_file_location("Menu", caminho)
+        modulo = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(modulo)
+
+        # Passa: frame, função de voltar, e a janela principal se precisar
+        modulo.montar_tela(
+            frame=tela_nova,
+            voltar=lambda: tela_menu.tkraise(),
+            janela_principal=janela  # Se precisar usar janela.cget() etc
+        )
+
+    except Exception as e:
+        tk.Label(tela_nova, text=f"Erro: {e}", fg="red", bg="#2d2d2d").pack()
 
 imagem_original = Image.open(r"Imagens\Configurações.png").convert("RGBA")
 imagem_original = imagem_original.resize((585, 500))
 imagem_botao = ImageTk.PhotoImage(imagem_original)
 
-def clicar():
-    print("Botão clicado!")
-
 botao = tk.Button(
-    janela,
+    tela_menu,
     image=imagem_botao,
-    command=clicar,
-    borderwidth=0,           # tira borda
-    highlightthickness=0,    # tira contorno de foco
-    bg=janela.cget("bg"),    # fundo igual da janela
-    activebackground=janela.cget("bg"),  # não pisca quando clica
-    relief="flat",           # tira efeito 3D
-    cursor="hand2"
+    command=abrir_tela_nova,
+    borderwidth=0,
+    highlightthickness=0,
+    bg=janela.cget("bg"),
+    activebackground=janela.cget("bg"),
+    relief="flat",
+    cursor="hand2",
 )
 botao.image = imagem_botao
-botao.place(relx=0.825, rely=0.6, anchor="center")  # responsivo
+botao.place(relx=0.825, rely=0.6, anchor="center")
+
+tela_menu.tkraise()
 
 # BORDA BRANCA NO RODAPÉ
 rodape = tk.Frame(janela, bg="white", height=55)
