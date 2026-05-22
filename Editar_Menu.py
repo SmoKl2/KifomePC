@@ -1,6 +1,8 @@
 import tkinter as tk
 from PIL import Image, ImageTk
 import os
+import sys
+import importlib.util
 
 def montar_tela(frame, voltar, janela_principal):
 
@@ -57,18 +59,44 @@ def montar_tela(frame, voltar, janela_principal):
 
 #Código botão voltar
 
+    def Configuracoes():
+        for widget in frame.winfo_children():
+            widget.destroy()
+
+        frame.tkraise()
+
+        caminho = r"Configuracoes.py"
+
+        try:
+            if "Configuracoes" in sys.modules:
+                del sys.modules["Configuracoes"]
+
+            spec = importlib.util.spec_from_file_location("Configuracoes", caminho)
+            modulo = importlib.util.module_from_spec(spec)
+            spec.loader.exec_module(modulo)
+
+            # Passa: frame, função de voltar e a janela principal
+            modulo.montar_tela(
+                frame=frame,
+                voltar=lambda: frame.tkraise(),
+                janela_principal=janela_principal
+            )
+
+        except Exception as e:
+            tk.Label(frame, text=f"Erro: {e}", fg="red", bg="#FCB57D").pack()
+
     caminho_voltar = r"Imagens\voltar.png"
 
     if os.path.exists(caminho_voltar):
         try:
             img_voltar_original = Image.open(caminho_voltar).convert("RGBA")
-            img_voltar_original = img_voltar_original.resize((60, 60))  # Ajusta o tamanho
+            img_voltar_original = img_voltar_original.resize((60, 60))
             img_voltar = ImageTk.PhotoImage(img_voltar_original)
 
             botao_voltar = tk.Button(
                 frame,
                 image=img_voltar,
-                command=voltar,   #voltar tela main
+                command=Configuracoes,  # chama a função nova
                 borderwidth=0,
                 highlightthickness=0,
                 bg="#FCB57D",
@@ -76,15 +104,12 @@ def montar_tela(frame, voltar, janela_principal):
                 relief="flat",
                 cursor="hand2"
             )
-            botao_voltar.image = img_voltar  # Guarda referência
+            botao_voltar.image = img_voltar
             botao_voltar.place(relx=0.025, rely=0.05, anchor="center")
 
         except Exception as e:
-#Erro
-            tk.Button(frame, text="Voltar pro Menu", font=("Arial", 14), command=voltar).place(relx=0.5, rely=0.9,
-                                                                                               anchor="center")
+            botao_voltar = tk.Button(frame, text="Voltar pra Configuracoes", font=("Arial", 14), command=Configuracoes)
+            botao_voltar.place(relx=0.5, rely=0.9, anchor="center")
     else:
-#Se não achar a imagem, usa botão normal
-        tk.Button(frame, text="Voltar pro Menu", font=("Arial", 14), command=voltar).place(relx=0.5, rely=0.9,
-                                                                                           anchor="center")
-
+        botao_voltar = tk.Button(frame, text="Voltar pra Configuracoes", font=("Arial", 14), command=Configuracoes)
+        botao_voltar.place(relx=0.5, rely=0.9, anchor="center")

@@ -7,6 +7,7 @@ def montar_tela(frame, voltar, janela_principal):
     cor_fundo = janela_principal.cget("bg")
 
 #Trocar pra cor background
+
     frame.config(bg="#FCB57D")
 
     def trocar_bg(cor):
@@ -16,6 +17,24 @@ def montar_tela(frame, voltar, janela_principal):
             botao_voltar.config(bg=cor, activebackground=cor)
         if 'botao_continuar' in locals():
             botao_continuar.config(bg=cor, activebackground=cor)
+
+# Tamanho da janela principal
+
+            janela_principal.update_idletasks()  # Garante que pegou o tamanho certo
+            largura_janela = janela_principal.winfo_width()
+            altura_janela = janela_principal.winfo_height()
+
+# Correção erro janela não renderizando
+
+            if largura_janela <= 1:
+                largura_janela = janela_principal.winfo_screenwidth()
+                altura_janela = janela_principal.winfo_screenheight()
+
+# Escala baseado em 1920x1080
+
+            escala_w = largura_janela / 1920
+            escala_h = altura_janela / 1080
+            escala = min(escala_w, escala_h)
 
 #Código nome kifome
     caminho_imagem = r"Imagens\nome kifome.png"
