@@ -107,7 +107,7 @@ def montar_tela(frame, voltar, janela_principal):
                 cursor="hand2"
             )
             botao_continuar.image = img_continuar
-            botao_continuar.place(relx=0.975, rely=0.95, anchor="center")
+            botao_continuar.place(relx=0.975, rely=0.6, anchor="center")
 
         except Exception as e:
             botao_continuar = tk.Button(frame, text="Continuar", font=("Arial", 14), command=lambda: print("Continuar clicado"))
@@ -115,3 +115,19 @@ def montar_tela(frame, voltar, janela_principal):
     else:
         botao_continuar = tk.Button(frame, text="Continuar", font=("Arial", 14), command=lambda: print("Continuar clicado"))
         botao_continuar.place(relx=0.975, rely=0.95, anchor="center")
+
+#Borda branca rodapé
+    rodape = tk.Frame(frame, bg="white", height=55)
+    rodape.place(relx=0, rely=1, anchor="sw", relwidth=1)
+
+#Texto ALPHA VERSION
+    texto = tk.Label(
+        frame,
+        text="ALPHA VERSION 1.0",
+        bg="white",
+        fg="Black",
+        font=("Dubai", 20, "bold"),
+        padx=0,
+        pady=0
+    )
+    texto.place(relx=0.07, rely=0.977, anchor="center")

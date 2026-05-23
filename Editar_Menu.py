@@ -113,3 +113,19 @@ def montar_tela(frame, voltar, janela_principal):
     else:
         botao_voltar = tk.Button(frame, text="Voltar pra Configuracoes", font=("Arial", 14), command=Configuracoes)
         botao_voltar.place(relx=0.5, rely=0.9, anchor="center")
+
+#Borda branca rodapé
+    rodape = tk.Frame(frame, bg="white", height=55)
+    rodape.place(relx=0, rely=1, anchor="sw", relwidth=1)
+
+#Texto ALPHA VERSION
+    texto = tk.Label(
+        frame,
+        text="ALPHA VERSION 1.0",
+        bg="white",
+        fg="Black",
+        font=("Dubai", 20, "bold"),
+        padx=0,
+        pady=0
+    )
+    texto.place(relx=0.07, rely=0.977, anchor="center")
