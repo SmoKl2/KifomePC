@@ -163,7 +163,6 @@ def montar_tela(frame, voltar, janela_principal):
     )
     texto.place(relx=0.07, rely=0.977, anchor="center")
 
-
 #Executar Main.py direto
 if __name__ == "__main__":
     janela = tk.Tk()
