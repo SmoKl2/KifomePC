@@ -2,10 +2,18 @@ import tkinter as tk
 from tkinter import ttk, messagebox, filedialog
 from PIL import Image, ImageTk
 import sqlite3
-import os
 import shutil
-import sys
 import importlib.util
+import sys
+import os
+
+def resource_path(relative_path):
+    try:
+        base_path = sys._MEIPASS  # pasta temporária do PyInstaller
+    except:
+        base_path = os.path.abspath(".")
+    return os.path.join(base_path, relative_path)
+
 
 def montar_tela(frame, voltar, janela_principal):
     for widget in frame.winfo_children():

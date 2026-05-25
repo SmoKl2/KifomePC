@@ -2,7 +2,15 @@ import tkinter as tk
 from PIL import Image, ImageTk
 import importlib.util
 import sys
+import os
 
+
+def resource_path(relative_path):
+    try:
+        base_path = sys._MEIPASS  # pasta temporária do PyInstaller
+    except:
+        base_path = os.path.abspath(".")
+    return os.path.join(base_path, relative_path)
 
 def montar_tela(frame, voltar, janela_principal):
     for widget in frame.winfo_children():
@@ -163,13 +171,14 @@ def montar_tela(frame, voltar, janela_principal):
     )
     texto.place(relx=0.07, rely=0.977, anchor="center")
 
-#Executar Main.py direto
+#Configurações janela
+
 if __name__ == "__main__":
     janela = tk.Tk()
     janela.title("Kifome")
     janela.geometry("1280x720")
     janela.configure(bg="#FCB57D")
-    janela.iconbitmap(r"Imagens\Logo.ico")
+    janela.iconbitmap(resource_path(r"Imagens\Logo.ico"))
 
     largura_tela = janela.winfo_screenwidth()
     altura_tela = janela.winfo_screenheight()
