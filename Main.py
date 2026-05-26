@@ -12,6 +12,8 @@ def resource_path(relative_path):
         base_path = os.path.abspath(".")
     return os.path.join(base_path, relative_path)
 
+
+
 def montar_tela(frame, voltar, janela_principal):
     for widget in frame.winfo_children():
         widget.destroy()
@@ -36,6 +38,7 @@ def montar_tela(frame, voltar, janela_principal):
         )
     """)
     conn.commit()
+
 
 
 #Código nome kifome
@@ -207,6 +210,11 @@ if __name__ == "__main__":
     container = tk.Frame(janela, bg="#FCB57D")
     container.pack(fill="both", expand=True)
 
-    montar_tela(container, voltar=lambda: None, janela_principal=janela)
+
+    def voltar_pro_menu():
+        montar_tela(container, voltar_pro_menu, janela_principal=janela)
+
+
+    montar_tela(container, voltar_pro_menu, janela_principal=janela)
 
     janela.mainloop()

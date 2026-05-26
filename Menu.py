@@ -8,7 +8,7 @@ import os
 
 def resource_path(relative_path):
     try:
-        base_path = sys._MEIPASS  # pasta temporária do PyInstaller
+        base_path = sys._MEIPASS
     except:
         base_path = os.path.abspath(".")
     return os.path.join(base_path, relative_path)
@@ -26,7 +26,7 @@ def montar_tela(frame, voltar, janela_principal):
         janela_principal.lista_imagens = []
 
     # --- BANCO ---
-    conn = sqlite3.connect("cardapio.db")
+    conn = sqlite3.connect(resource_path("cardapio.db")) # CORRIGIDO
     cursor = conn.cursor()
     cursor.execute("""
         CREATE TABLE IF NOT EXISTS produtos (
@@ -39,8 +39,49 @@ def montar_tela(frame, voltar, janela_principal):
     """)
     conn.commit()
 
+    # --- FECHA O BANCO ANTES DE VOLTAR ---
+    def voltar_seguro():
+        try:
+            conn.close()
+        except:
+            pass
+        voltar()
+
+    # --- FRAME TOPO PRA SEGURAR O BOTÃO ---
+    frame_topo = tk.Frame(frame, bg=cor_fundo)
+    frame_topo.pack(side="top", fill="x")
+
+    # --- BOTÃO VOLTAR CORRIGIDO ---
+
+    caminho_voltar = resource_path(r"Imagens\voltar.png") # CORRIGIDO
+    if os.path.exists(caminho_voltar):
+        try:
+            img_voltar_original = Image.open(caminho_voltar).convert("RGBA")
+            img_voltar_original = img_voltar_original.resize((60, 60))
+            img_voltar = ImageTk.PhotoImage(img_voltar_original)
+            janela_principal.lista_imagens.append(img_voltar)
+
+            botao_voltar = tk.Button(
+                frame_topo, # PAI É O FRAME_TOPO
+                image=img_voltar,
+                command=voltar_seguro, # USA VOLTAR_SEGURO
+                borderwidth=0,
+                highlightthickness=0,
+                bg=cor_fundo,
+                activebackground=cor_fundo,
+                relief="flat",
+                cursor="hand2"
+            )
+            botao_voltar.image = img_voltar
+            botao_voltar.pack(side="left", padx=10, pady=10) # PACK EM VEZ DE PLACE
+        except Exception as e:
+            print(f"Erro botão: {e}")
+            tk.Button(frame_topo, text="Voltar", command=voltar_seguro).pack(side="left", padx=10, pady=10)
+    else:
+        tk.Button(frame_topo, text="Voltar", command=voltar_seguro).pack(side="left", padx=10, pady=10)
+
     # --- LOGO ---
-    caminho_imagem = r"Imagens\nome kifome.png"
+    caminho_imagem = resource_path(r"Imagens\nome kifome.png") # CORRIGIDO
     if os.path.exists(caminho_imagem):
         try:
             img_original = Image.open(caminho_imagem).convert("RGBA")
@@ -85,16 +126,18 @@ def montar_tela(frame, voltar, janela_principal):
         frame_conteudo = tk.Frame(card, bg="white")
         frame_conteudo.pack(fill="both", expand=True, padx=15, pady=15)
 
-        # Imagem do produto
-        if caminho_img and os.path.exists(caminho_img):
-            try:
-                img_prod = Image.open(caminho_img).convert("RGBA")
-                img_prod = img_prod.resize((120, 120))
-                img_prod_tk = ImageTk.PhotoImage(img_prod)
-                janela_principal.lista_imagens.append(img_prod_tk)
-                tk.Label(frame_conteudo, image=img_prod_tk, bg="white").pack(side="left", padx=(0, 20))
-            except:
-                pass
+        # Imagem do produto - CORRIGIDO
+        if caminho_img:
+            caminho_img_abs = resource_path(caminho_img)
+            if os.path.exists(caminho_img_abs):
+                try:
+                    img_prod = Image.open(caminho_img_abs).convert("RGBA")
+                    img_prod = img_prod.resize((120, 120))
+                    img_prod_tk = ImageTk.PhotoImage(img_prod)
+                    janela_principal.lista_imagens.append(img_prod_tk)
+                    tk.Label(frame_conteudo, image=img_prod_tk, bg="white").pack(side="left", padx=(0, 20))
+                except:
+                    pass
 
         # Textos
         frame_textos = tk.Frame(frame_conteudo, bg="white")
@@ -159,36 +202,6 @@ def montar_tela(frame, voltar, janela_principal):
         carregar_produtos(termo)
 
     entry_pesquisa.bind("<KeyRelease>", pesquisar)
-
-    # Código botão voltar
-    caminho_voltar = r"Imagens\voltar.png"
-
-    if os.path.exists(caminho_voltar):
-        try:
-            img_voltar_original = Image.open(caminho_voltar).convert("RGBA")
-            img_voltar_original = img_voltar_original.resize((60, 60))
-            img_voltar = ImageTk.PhotoImage(img_voltar_original)
-
-            botao_voltar = tk.Button(
-                frame,
-                image=img_voltar,
-                command=voltar,
-                borderwidth=0,
-                highlightthickness=0,
-                bg="#FCB57D",
-                activebackground="#FCB57D",
-                relief="flat",
-                cursor="hand2"
-            )
-            botao_voltar.image = img_voltar
-            botao_voltar.place(relx=0.025, rely=0.05, anchor="center")
-
-        except Exception as e:
-            botao_voltar = tk.Button(frame, text="Voltar pro Menu", font=("Arial", 14), command=voltar)
-            botao_voltar.place(relx=0.5, rely=0.9, anchor="center")
-    else:
-        botao_voltar = tk.Button(frame, text="Voltar pro Menu", font=("Arial", 14), command=voltar)
-        botao_voltar.place(relx=0.5, rely=0.9, anchor="center")
 
     # Borda branca rodapé
     rodape = tk.Frame(frame, bg="white", height=55)
