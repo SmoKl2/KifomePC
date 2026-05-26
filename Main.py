@@ -1,32 +1,34 @@
 import tkinter as tk
 from PIL import Image, ImageTk
-import importlib.util
+import Menu
+import Carrinho
+import Configuracoes
 import sys
 import os
 import sqlite3
 
 def resource_path(relative_path):
     try:
-        base_path = sys._MEIPASS  # pasta temporária do PyInstaller
+        base_path = sys._MEIPASS
     except:
         base_path = os.path.abspath(".")
     return os.path.join(base_path, relative_path)
-
-
 
 def montar_tela(frame, voltar, janela_principal):
     for widget in frame.winfo_children():
         widget.destroy()
 
     cor_fundo = "#FCB57D"
-
     frame.config(bg="#FCB57D")
 
-#Guardar lista de imagens caso não exista
     if not hasattr(janela_principal, 'lista_imagens'):
         janela_principal.lista_imagens = []
 
-    conn = sqlite3.connect(resource_path("cardapio.db"))  # MUDOU AQUI
+    # --- DEFINE VOLTAR_PRO_MENU AQUI, ANTES DE USAR ---
+    def voltar_pro_menu():
+        montar_tela(frame, voltar_pro_menu, janela_principal)
+
+    conn = sqlite3.connect(resource_path("cardapio.db"))
     cursor = conn.cursor()
     cursor.execute("""
         CREATE TABLE IF NOT EXISTS produtos (
@@ -39,10 +41,8 @@ def montar_tela(frame, voltar, janela_principal):
     """)
     conn.commit()
 
-
-
-#Código nome kifome
-    caminho_imagem = resource_path(r"Imagens\nome kifome.png")  # MUDOU AQUI
+    # Código nome kifome
+    caminho_imagem = resource_path(r"Imagens\nome kifome.png")
     if os.path.exists(caminho_imagem):
         try:
             img_original = Image.open(caminho_imagem).convert("RGBA")
@@ -50,29 +50,15 @@ def montar_tela(frame, voltar, janela_principal):
             img_tk = ImageTk.PhotoImage(img_original)
             janela_principal.lista_imagens.append(img_tk)
             label_img = tk.Label(frame, image=img_tk, bg=cor_fundo)
-
             label_img.pack(pady=10)
-
         except:
             pass
 
-#Código botão Menu
+    #Código botão Menu
     def abrir_menu():
         for widget in frame.winfo_children():
             widget.destroy()
-
-        caminho = resource_path("Menu.py")
-        try:
-            if "Menu" in sys.modules:
-                del sys.modules["Menu"]
-
-            spec = importlib.util.spec_from_file_location("Menu", caminho)
-            modulo = importlib.util.module_from_spec(spec)
-            spec.loader.exec_module(modulo)
-            modulo.montar_tela(frame, voltar, janela_principal)
-
-        except Exception as e:
-            tk.Label(frame, text=f"Erro: {e}", fg="red", bg="#FCB57D").pack()
+        Menu.montar_tela(frame, voltar_pro_menu, janela_principal)
 
     imagem_original = Image.open(resource_path(r"Imagens\Menu.png"))
     imagem_original = imagem_original.resize((585, 500))
@@ -92,27 +78,11 @@ def montar_tela(frame, voltar, janela_principal):
     )
     botao.place(relx=0.17, rely=0.6, anchor="center")
 
-#Código botão Carrinho
+    #Código botão Carrinho
     def abrir_carrinho():
         for widget in frame.winfo_children():
             widget.destroy()
-
-        caminho = r"Carrinho.py"
-        try:
-            if "Carrinho" in sys.modules:
-                del sys.modules["Carrinho"]
-
-            spec = importlib.util.spec_from_file_location("Carrinho", caminho)
-            modulo = importlib.util.module_from_spec(spec)
-            spec.loader.exec_module(modulo)
-
-            modulo.montar_tela(
-                frame=frame,
-                voltar=lambda: montar_tela(frame, voltar, janela_principal),
-                janela_principal=janela_principal
-            )
-        except Exception as e:
-            tk.Label(frame, text=f"Erro: {e}", fg="red", bg="#FCB57D").pack()
+        Carrinho.montar_tela(frame, voltar_pro_menu, janela_principal) # AGORA EXISTE
 
     imagem_original = Image.open(resource_path(r"Imagens\Carrinho.png"))
     imagem_original = imagem_original.resize((585, 500))
@@ -132,27 +102,11 @@ def montar_tela(frame, voltar, janela_principal):
     )
     botao.place(relx=0.497, rely=0.6, anchor="center")
 
-#Código botão Configurações
+    #Código botão Configurações
     def abrir_config():
         for widget in frame.winfo_children():
             widget.destroy()
-
-        caminho = r"Configuracoes.py"
-        try:
-            if "Configuracoes" in sys.modules:
-                del sys.modules["Configuracoes"]
-
-            spec = importlib.util.spec_from_file_location("Configuracoes", caminho)
-            modulo = importlib.util.module_from_spec(spec)
-            spec.loader.exec_module(modulo)
-
-            modulo.montar_tela(
-                frame=frame,
-                voltar=lambda: montar_tela(frame, voltar, janela_principal),
-                janela_principal=janela_principal
-            )
-        except Exception as e:
-            tk.Label(frame, text=f"Erro: {e}", fg="red", bg="#FCB57D").pack()
+        Configuracoes.montar_tela(frame, voltar_pro_menu, janela_principal)
 
     imagem_original = Image.open(resource_path(r"Imagens\Configurações.png"))
     imagem_original = imagem_original.resize((585, 500))
@@ -172,13 +126,9 @@ def montar_tela(frame, voltar, janela_principal):
     )
     botao.place(relx=0.825, rely=0.6, anchor="center")
 
-#Borda branca rodapé
+    #Borda branca rodapé
     rodape = tk.Frame(frame, bg="white", height=55)
     rodape.place(relx=0, rely=1, anchor="sw", relwidth=1)
-
-    def ao_sair():
-        conn.close()
-        voltar()
 
     #Texto ALPHA VERSION
     texto = tk.Label(
@@ -191,9 +141,6 @@ def montar_tela(frame, voltar, janela_principal):
         pady=0
     )
     texto.place(relx=0.07, rely=0.977, anchor="center")
-
-
-#Configurações janela
 
 if __name__ == "__main__":
     janela = tk.Tk()
@@ -210,11 +157,10 @@ if __name__ == "__main__":
     container = tk.Frame(janela, bg="#FCB57D")
     container.pack(fill="both", expand=True)
 
+    # AQUI TAMBÉM PRECISA DA FUNÇÃO
+    def iniciar():
+        montar_tela(container, iniciar, janela_principal=janela)
 
-    def voltar_pro_menu():
-        montar_tela(container, voltar_pro_menu, janela_principal=janela)
-
-
-    montar_tela(container, voltar_pro_menu, janela_principal=janela)
+    montar_tela(container, iniciar, janela_principal=janela)
 
     janela.mainloop()

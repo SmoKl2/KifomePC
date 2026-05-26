@@ -1,68 +1,72 @@
 import tkinter as tk
 from PIL import Image, ImageTk
-import importlib.util
+import sqlite3
 import sys
 import os
 
 def resource_path(relative_path):
     try:
-        base_path = sys._MEIPASS  # pasta temporária do PyInstaller
+        base_path = sys._MEIPASS
     except:
         base_path = os.path.abspath(".")
     return os.path.join(base_path, relative_path)
 
 def montar_tela(frame, voltar, janela_principal):
-    cor_fundo = janela_principal.cget("bg")
+    for widget in frame.winfo_children(): # LIMPA A TELA
+        widget.destroy()
 
-    # Trocar pra cor background
+    cor_fundo = "#FCB57D"
+    frame.config(bg=cor_fundo)
 
-    frame.config(bg="#FCB57D")
+    if not hasattr(janela_principal, 'lista_imagens'):
+        janela_principal.lista_imagens = []
 
-    def trocar_bg(cor):
-        frame.config(bg=cor)
-        label_img.config(bg=cor)
-        if 'botao_voltar' in locals():
-            botao_voltar.config(bg=cor, activebackground=cor)
+    # --- BANCO --- FORA DO IF
+    conn = sqlite3.connect(resource_path("cardapio.db"))
+    cursor = conn.cursor()
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS produtos (
+            id INTEGER PRIMARY KEY,
+            nome TEXT,
+            preco REAL,
+            descricao TEXT,
+            imagem TEXT
+        )
+    """)
+    conn.commit()
 
-            # Tamanho da janela principal
+    # --- FECHA O BANCO ANTES DE VOLTAR ---
+    def voltar_seguro():
+        try:
+            conn.close()
+        except:
+            pass
+        voltar()
 
-            janela_principal.update_idletasks()  # Garante que pegou o tamanho certo
-            largura_janela = janela_principal.winfo_width()
-            altura_janela = janela_principal.winfo_height()
+    # Código nome kifome - FORA DO IF
+    caminho_imagem = resource_path(r"Imagens\nome kifome.png")
+    if os.path.exists(caminho_imagem):
+        try:
+            img_original = Image.open(caminho_imagem).convert("RGBA")
+            img_original = img_original.resize((600, 220))
+            img_tk = ImageTk.PhotoImage(img_original)
+            janela_principal.lista_imagens.append(img_tk)
+            label_img = tk.Label(frame, image=img_tk, bg=cor_fundo)
+            label_img.pack(pady=10)
+        except Exception as e:
+            print(f"Erro logo: {e}")
 
-            # Correção erro janela não renderizando
-
-            if largura_janela <= 1:
-                largura_janela = janela_principal.winfo_screenwidth()
-                altura_janela = janela_principal.winfo_screenheight()
-
-            # Escala baseado em 1920x1080
-
-            escala_w = largura_janela / 1920
-            escala_h = altura_janela / 1080
-            escala = min(escala_w, escala_h)
-
-#Código Texto Editar Menu
+    #Código Texto Editar Menu
     def Editar_Menu(event=None):
         for widget in frame.winfo_children():
             widget.destroy()
-
-        caminho = r"Editar_Menu.py"
-        try:
-            if "Editar_Menu" in sys.modules:
-                del sys.modules["Editar_Menu"]
-
-            spec = importlib.util.spec_from_file_location("Editar_Menu", caminho)
-            modulo = importlib.util.module_from_spec(spec)
-            spec.loader.exec_module(modulo)
-
-            modulo.montar_tela(
-                frame=frame,
-                voltar=lambda: montar_tela(frame, voltar, janela_principal),
-                janela_principal=janela_principal
-            )
-        except Exception as e:
-            tk.Label(frame, text=f"Erro: {e}", fg="red", bg="#FCB57D").pack()
+        # PARA DE USAR IMPORTLIB NO .EXE
+        import Editar_Menu
+        Editar_Menu.montar_tela(
+            frame=frame,
+            voltar=lambda: montar_tela(frame, voltar, janela_principal),
+            janela_principal=janela_principal
+        )
 
     texto_editar = tk.Label(
         frame,
@@ -77,43 +81,8 @@ def montar_tela(frame, voltar, janela_principal):
     texto_editar.bind("<Enter>", lambda e: texto_editar.config(fg="#34495e", font=("Arial", 18, "bold", "underline")))
     texto_editar.bind("<Leave>", lambda e: texto_editar.config(fg="#2c3e50", font=("Arial", 18, "bold")))
 
-#Código nome kifome
-    caminho_imagem = r"Imagens\nome kifome.png"
-    if os.path.exists(caminho_imagem):
-        try:
-            img_original = Image.open(caminho_imagem).convert("RGBA")
-            img_original = img_original.resize((600, 220))
-            img_tk = ImageTk.PhotoImage(img_original)
-            janela_principal.lista_imagens.append(img_tk)
-
-            label_img = tk.Label(frame, image=img_tk, bg="#FCB57D")
-            label_img.place(relx=0.5, rely=0.16, anchor="center")
-        except Exception as e:
-            label_img = tk.Label(frame, text=f"Erro ao carregar imagem: {e}", fg="red", bg="#FCB57D")
-            label_img.place(relx=0.5, rely=0.16, anchor="center")
-    else:
-        label_img = tk.Label(frame, text="Imagem não encontrada", fg="red", bg="#FCB57D")
-        label_img.place(relx=0.5, rely=0.16, anchor="center")
-
-#Código botão voltar
-    def voltar_pra_tela_anterior():
-        for widget in frame.winfo_children():
-            widget.destroy()
-
-        caminho = r"Main.py"
-        try:
-            nome_modulo = "Main"
-            if nome_modulo in sys.modules:
-                del sys.modules[nome_modulo]
-
-            spec = importlib.util.spec_from_file_location(nome_modulo, caminho)
-            modulo = importlib.util.module_from_spec(spec)
-            spec.loader.exec_module(modulo)
-            modulo.montar_tela(frame=frame, voltar=lambda: None, janela_principal=janela_principal)
-        except Exception as e:
-            tk.Label(frame, text=f"Erro ao voltar: {e}", fg="red", bg="#FCB57D").pack()
-
-    caminho_voltar = r"Imagens\voltar.png"
+    #Código botão voltar - USA O voltar_seguro
+    caminho_voltar = resource_path(r"Imagens\voltar.png")
     if os.path.exists(caminho_voltar):
         try:
             img_voltar_original = Image.open(caminho_voltar).convert("RGBA")
@@ -124,7 +93,7 @@ def montar_tela(frame, voltar, janela_principal):
             botao_voltar = tk.Button(
                 frame,
                 image=img_voltar,
-                command=voltar_pra_tela_anterior,
+                command=voltar_seguro, # CORRIGIDO
                 borderwidth=0,
                 highlightthickness=0,
                 bg="#FCB57D",
@@ -133,19 +102,19 @@ def montar_tela(frame, voltar, janela_principal):
                 cursor="hand2"
             )
             botao_voltar.place(relx=0.025, rely=0.05, anchor="center")
-        except Exception as e:
-            botao_voltar = tk.Button(frame, text="Voltar pro Menu", font=("Arial", 14),
-                                     command=voltar_pra_tela_anterior)
-            botao_voltar.place(relx=0.5, rely=0.9, anchor="center")
+        except:
+            botao_voltar = tk.Button(frame, text="Voltar", font=("Arial", 14),
+                                     command=voltar_seguro)
+            botao_voltar.place(relx=0.025, rely=0.05, anchor="center")
     else:
-        botao_voltar = tk.Button(frame, text="Voltar pro Menu", font=("Arial", 14), command=voltar_pra_tela_anterior)
-        botao_voltar.place(relx=0.5, rely=0.9, anchor="center")
+        botao_voltar = tk.Button(frame, text="Voltar", font=("Arial", 14), command=voltar_seguro)
+        botao_voltar.place(relx=0.025, rely=0.05, anchor="center")
 
-#Borda branca rodapé
+    #Borda branca rodapé
     rodape = tk.Frame(frame, bg="white", height=55)
     rodape.place(relx=0, rely=1, anchor="sw", relwidth=1)
 
-#Texto ALPHA VERSION
+    #Texto ALPHA VERSION
     texto = tk.Label(
         frame,
         text="ALPHA VERSION 1.0",

@@ -1,17 +1,17 @@
 import tkinter as tk
 from tkinter import ttk, messagebox
 from PIL import Image, ImageTk
+import sqlite3
 import carrinho_global
 import sys
 import os
 
 def resource_path(relative_path):
     try:
-        base_path = sys._MEIPASS  # pasta temporária do PyInstaller
+        base_path = sys._MEIPASS
     except:
         base_path = os.path.abspath(".")
     return os.path.join(base_path, relative_path)
-
 
 def montar_tela(frame, voltar, janela_principal):
     for widget in frame.winfo_children():
@@ -23,8 +23,30 @@ def montar_tela(frame, voltar, janela_principal):
     if not hasattr(janela_principal, 'lista_imagens'):
         janela_principal.lista_imagens = []
 
-    # --- LOGO ---
-    caminho_imagem = r"Imagens\nome kifome.png"
+    # --- BANCO --- FORA DO IF
+    conn = sqlite3.connect(resource_path("cardapio.db"))
+    cursor = conn.cursor()
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS produtos (
+            id INTEGER PRIMARY KEY,
+            nome TEXT,
+            preco REAL,
+            descricao TEXT,
+            imagem TEXT
+        )
+    """)
+    conn.commit()
+
+    # --- FECHA O BANCO ANTES DE VOLTAR ---
+    def voltar_seguro():
+        try:
+            conn.close()
+        except:
+            pass
+        voltar()
+
+    # Código nome kifome - FORA DO IF
+    caminho_imagem = resource_path(r"Imagens\nome kifome.png")
     if os.path.exists(caminho_imagem):
         try:
             img_original = Image.open(caminho_imagem).convert("RGBA")
@@ -32,13 +54,9 @@ def montar_tela(frame, voltar, janela_principal):
             img_tk = ImageTk.PhotoImage(img_original)
             janela_principal.lista_imagens.append(img_tk)
             label_img = tk.Label(frame, image=img_tk, bg=cor_fundo)
-            label_img.place(relx=0.5, rely=0.16, anchor="center")
+            label_img.pack(pady=10)
         except Exception as e:
-            label_img = tk.Label(frame, text=f"Erro ao carregar imagem: {e}", fg="red", bg=cor_fundo)
-            label_img.place(relx=0.5, rely=0.16, anchor="center")
-    else:
-        label_img = tk.Label(frame, text="Imagem não encontrada", fg="red", bg=cor_fundo)
-        label_img.place(relx=0.5, rely=0.16, anchor="center")
+            print(f"Erro logo: {e}")
 
     # --- CARRINHO ---
     frame_carrinho = tk.Frame(frame, bg="#2c3e50", bd=2, relief="ridge")
@@ -149,7 +167,7 @@ def montar_tela(frame, voltar, janela_principal):
              font=("Arial", 14, "bold"), cursor="hand2", command=limpar).pack(side="right", expand=True, fill="x", padx=(5, 0), ipady=8)
 
     # Botão voltar
-    caminho_voltar = r"Imagens\voltar.png"
+    caminho_voltar = resource_path(r"Imagens\voltar.png")
     if os.path.exists(caminho_voltar):
         try:
             img_voltar_original = Image.open(caminho_voltar).convert("RGBA")
@@ -160,7 +178,7 @@ def montar_tela(frame, voltar, janela_principal):
             botao_voltar = tk.Button(
                 frame,
                 image=img_voltar,
-                command=voltar,
+                command=voltar_seguro, # USA voltar_seguro
                 borderwidth=0,
                 highlightthickness=0,
                 bg=cor_fundo,
@@ -171,9 +189,9 @@ def montar_tela(frame, voltar, janela_principal):
             botao_voltar.image = img_voltar
             botao_voltar.place(relx=0.025, rely=0.05, anchor="center")
         except:
-            tk.Button(frame, text="Voltar", command=voltar).place(relx=0.025, rely=0.05)
+            tk.Button(frame, text="Voltar", command=voltar_seguro).place(relx=0.025, rely=0.05)
     else:
-        tk.Button(frame, text="Voltar", command=voltar).place(relx=0.025, rely=0.05)
+        tk.Button(frame, text="Voltar", command=voltar_seguro).place(relx=0.025, rely=0.05)
 
     # Borda branca rodapé
     rodape = tk.Frame(frame, bg="white", height=55)
@@ -190,6 +208,5 @@ def montar_tela(frame, voltar, janela_principal):
         pady=0
     )
     texto.place(relx=0.07, rely=0.977, anchor="center")
-
 
     atualizar_carrinho()

@@ -25,8 +25,8 @@ def montar_tela(frame, voltar, janela_principal):
     if not hasattr(janela_principal, 'lista_imagens'):
         janela_principal.lista_imagens = []
 
-    # --- BANCO ---
-    conn = sqlite3.connect("cardapio.db")
+    # --- BANCO --- FORA DO IF
+    conn = sqlite3.connect(resource_path("cardapio.db"))
     cursor = conn.cursor()
     cursor.execute("""
         CREATE TABLE IF NOT EXISTS produtos (
@@ -39,22 +39,30 @@ def montar_tela(frame, voltar, janela_principal):
     """)
     conn.commit()
 
+    # --- FECHA O BANCO ANTES DE VOLTAR ---
+    def voltar_seguro():
+        try:
+            conn.close()
+        except:
+            pass
+        voltar()
+
     # Cria pasta pra salvar as imagens dos produtos
     pasta_imagens = r"Imagens\Produtos"
     os.makedirs(pasta_imagens, exist_ok=True)
 
-    # --- LOGO ---
-    caminho_imagem = r"Imagens\nome kifome.png"
+    # Código nome kifome - FORA DO IF
+    caminho_imagem = resource_path(r"Imagens\nome kifome.png")
     if os.path.exists(caminho_imagem):
         try:
             img_original = Image.open(caminho_imagem).convert("RGBA")
-            img_original = img_original.resize((400, 150))
+            img_original = img_original.resize((600, 220))
             img_tk = ImageTk.PhotoImage(img_original)
             janela_principal.lista_imagens.append(img_tk)
             label_img = tk.Label(frame, image=img_tk, bg=cor_fundo)
             label_img.pack(pady=10)
-        except:
-            pass
+        except Exception as e:
+            print(f"Erro logo: {e}")
 
     # --- FORM DE CADASTRO ---
     frame_form = tk.Frame(frame, bg="#34495e", bd=2, relief="ridge")
@@ -214,24 +222,8 @@ def montar_tela(frame, voltar, janela_principal):
     tk.Button(frame_form, text="ADICIONAR PRODUTO", bg="#27ae60", fg="white", bd=0,
              font=("Arial", 12, "bold"), cursor="hand2", command=adicionar_produto).grid(row=5, column=0, columnspan=3, pady=15)
 
-    # --- BOTÃO VOLTAR ---
-    def Configuracoes():
-        conn.close()
-        for widget in frame.winfo_children():
-            widget.destroy()
-        frame.tkraise()
-        caminho = r"Configuracoes.py"
-        try:
-            if "Configuracoes" in sys.modules:
-                del sys.modules["Configuracoes"]
-            spec = importlib.util.spec_from_file_location("Configuracoes", caminho)
-            modulo = importlib.util.module_from_spec(spec)
-            spec.loader.exec_module(modulo)
-            modulo.montar_tela(frame=frame, voltar=lambda: frame.tkraise(), janela_principal=janela_principal)
-        except Exception as e:
-            tk.Label(frame, text=f"Erro: {e}", fg="red", bg=cor_fundo).pack()
-
-    caminho_voltar = r"Imagens\voltar.png"
+    #Código botão voltar - USA O voltar_seguro
+    caminho_voltar = resource_path(r"Imagens\voltar.png")
     if os.path.exists(caminho_voltar):
         try:
             img_voltar_original = Image.open(caminho_voltar).convert("RGBA")
@@ -240,15 +232,24 @@ def montar_tela(frame, voltar, janela_principal):
             janela_principal.lista_imagens.append(img_voltar)
 
             botao_voltar = tk.Button(
-                frame, image=img_voltar, command=Configuracoes,
-                borderwidth=0, highlightthickness=0, bg=cor_fundo,
-                activebackground=cor_fundo, relief="flat", cursor="hand2"
+                frame,
+                image=img_voltar,
+                command=voltar_seguro, # CORRIGIDO
+                borderwidth=0,
+                highlightthickness=0,
+                bg="#FCB57D",
+                activebackground="#FCB57D",
+                relief="flat",
+                cursor="hand2"
             )
             botao_voltar.place(relx=0.025, rely=0.05, anchor="center")
         except:
-            tk.Button(frame, text="Voltar", command=Configuracoes).place(relx=0.025, rely=0.05)
+            botao_voltar = tk.Button(frame, text="Voltar", font=("Arial", 14),
+                                     command=voltar_seguro)
+            botao_voltar.place(relx=0.025, rely=0.05, anchor="center")
     else:
-        tk.Button(frame, text="Voltar", command=Configuracoes).place(relx=0.025, rely=0.05)
+        botao_voltar = tk.Button(frame, text="Voltar", font=("Arial", 14), command=voltar_seguro)
+        botao_voltar.place(relx=0.025, rely=0.05, anchor="center")
 
     # Rodapé
     rodape = tk.Frame(frame, bg="white", height=55)

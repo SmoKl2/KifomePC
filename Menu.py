@@ -85,7 +85,7 @@ def montar_tela(frame, voltar, janela_principal):
     if os.path.exists(caminho_imagem):
         try:
             img_original = Image.open(caminho_imagem).convert("RGBA")
-            img_original = img_original.resize((400, 150))
+            img_original = img_original.resize((600, 220))
             img_tk = ImageTk.PhotoImage(img_original)
             janela_principal.lista_imagens.append(img_tk)
             label_img = tk.Label(frame, image=img_tk, bg=cor_fundo)
