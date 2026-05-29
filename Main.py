@@ -8,7 +8,7 @@ import os
 import sqlite3
 import ctypes
 
-myappid = 'kifome.app.v1'  # qualquer string única
+myappid = 'kifome.app.v1'
 ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID(myappid)
 
 
@@ -37,14 +37,14 @@ def montar_tela(frame, voltar, janela_principal):
     if not hasattr(janela_principal, 'lista_imagens'):
         janela_principal.lista_imagens = []
 
-    # PEGA TAMANHO DA TELA
+#Tamanho da Tela
     largura_tela = janela_principal.winfo_screenwidth()
     altura_tela = janela_principal.winfo_screenheight()
 
     def voltar_pro_menu():
         montar_tela(frame, voltar_pro_menu, janela_principal)
 
-    # BANCO: USA pasta_app() PRA SALVAR NA PASTA DO EXE
+#Banco
     conn = sqlite3.connect(os.path.join(pasta_app(), "cardapio.db"))
     cursor = conn.cursor()
     cursor.execute("""
@@ -58,27 +58,27 @@ def montar_tela(frame, voltar, janela_principal):
     """)
     conn.commit()
 
-    # Código nome kifome - TAMANHO RESPONSIVO
+#Código nome kifome
     caminho_imagem = resource_path(r"Imagens\nome kifome.png")
     if os.path.exists(caminho_imagem):
         try:
             img_original = Image.open(caminho_imagem).convert("RGBA")
-            # LOGO = 45% da largura da tela, altura proporcional
+
             largura_logo = int(largura_tela * 0.45)
-            altura_logo = int(largura_logo * 0.367)  # Mantém proporção 600x220
+            altura_logo = int(largura_logo * 0.367)
             img_original = img_original.resize((largura_logo, altura_logo))
             img_tk = ImageTk.PhotoImage(img_original)
             janela_principal.lista_imagens.append(img_tk)
             label_img = tk.Label(frame, image=img_tk, bg=cor_fundo)
-            label_img.pack(pady=(altura_tela * 0.02, 0))  # 2% da altura de espaço
+            label_img.pack(pady=(altura_tela * 0.02, 0))
         except:
             pass
 
-    # TAMANHO DOS BOTÕES RESPONSIVO
-    largura_botao = int(largura_tela * 0.28)  # 28% da tela
-    altura_botao = int(altura_tela * 0.45)  # 45% da tela
+#Tamanho dos Botões
+    largura_botao = int(largura_tela * 0.28)
+    altura_botao = int(altura_tela * 0.45)
 
-    # Código botão Menu
+#Código botão Menu
     def abrir_menu():
         for widget in frame.winfo_children():
             widget.destroy()
@@ -102,7 +102,7 @@ def montar_tela(frame, voltar, janela_principal):
     )
     botao.place(relx=0.17, rely=0.6, anchor="center")
 
-    # Código botão Carrinho
+#Código botão Carrinho
     def abrir_carrinho():
         for widget in frame.winfo_children():
             widget.destroy()
@@ -126,7 +126,7 @@ def montar_tela(frame, voltar, janela_principal):
     )
     botao.place(relx=0.497, rely=0.6, anchor="center")
 
-    # Código botão Configurações
+#Código botão Configurações
     def abrir_config():
         for widget in frame.winfo_children():
             widget.destroy()
@@ -150,18 +150,18 @@ def montar_tela(frame, voltar, janela_principal):
     )
     botao.place(relx=0.825, rely=0.6, anchor="center")
 
-    # Pega altura da janela principal uma vez só
+#Altura janela
     altura_tela = janela_principal.winfo_height()
-    if altura_tela <= 1:  # Se ainda não foi desenhada
+    if altura_tela <= 1:
         altura_tela = janela_principal.winfo_screenheight()
 
-    # Borda branca rodapé - ALTURA RESPONSIVA
-    altura_rodape = int(altura_tela * 0.07)  # 7% da altura
+#Borda branca rodapé
+    altura_rodape = int(altura_tela * 0.07)
     rodape = tk.Frame(frame, bg="white", height=altura_rodape)
     rodape.place(relx=0, rely=1, anchor="sw", relwidth=1)
 
-    # Texto ALPHA VERSION - FONTE RESPONSIVA
-    tamanho_fonte = int(altura_tela * 0.025)  # 2.5% da altura
+#Texto ALPHA VERSION
+    tamanho_fonte = int(altura_tela * 0.025)
     texto = tk.Label(
         frame,
         text="ALPHA VERSION 1.0",
@@ -179,12 +179,12 @@ if __name__ == "__main__":
     janela.title("Kifome")
     janela.configure(bg="#FCB57D")
 
-    # ÍCONE DA JANELA - CORRIGIDO COM resource_path
+#Ícone da Janela
     caminho_icone = resource_path("Imagens/icone.ico")
     if os.path.exists(caminho_icone):
         janela.iconbitmap(caminho_icone)
 
-    # FORÇA TELA CHEIA
+#Abre em tela Cheia
     janela.state('zoomed')
 
     container = tk.Frame(janela, bg="#FCB57D")

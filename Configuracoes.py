@@ -21,7 +21,7 @@ def montar_tela(frame, voltar, janela_principal):
     if not hasattr(janela_principal, 'lista_imagens'):
         janela_principal.lista_imagens = []
 
-    # --- BANCO --- FORA DO IF
+#Banco
     conn = sqlite3.connect(resource_path("cardapio.db"))
     cursor = conn.cursor()
     cursor.execute("""
@@ -35,7 +35,6 @@ def montar_tela(frame, voltar, janela_principal):
     """)
     conn.commit()
 
-    # --- FECHA O BANCO ANTES DE VOLTAR ---
     def voltar_seguro():
         try:
             conn.close()
@@ -43,7 +42,7 @@ def montar_tela(frame, voltar, janela_principal):
             pass
         voltar()
 
-    # Código nome kifome - FORA DO IF
+#Código nome kifome
     caminho_imagem = resource_path(r"Imagens\nome kifome.png")
     if os.path.exists(caminho_imagem):
         try:
@@ -56,11 +55,11 @@ def montar_tela(frame, voltar, janela_principal):
         except Exception as e:
             print(f"Erro logo: {e}")
 
-    #Código Texto Editar Menu
+#Código Texto Editar Menu
     def Editar_Menu(event=None):
         for widget in frame.winfo_children():
             widget.destroy()
-        # PARA DE USAR IMPORTLIB NO .EXE
+
         import Editar_Menu
         Editar_Menu.montar_tela(
             frame=frame,
@@ -81,7 +80,7 @@ def montar_tela(frame, voltar, janela_principal):
     texto_editar.bind("<Enter>", lambda e: texto_editar.config(fg="#34495e", font=("Arial", 18, "bold", "underline")))
     texto_editar.bind("<Leave>", lambda e: texto_editar.config(fg="#2c3e50", font=("Arial", 18, "bold")))
 
-    #Código botão voltar - USA O voltar_seguro
+#Código botão voltar
     caminho_voltar = resource_path(r"Imagens\voltar.png")
     if os.path.exists(caminho_voltar):
         try:
@@ -93,7 +92,7 @@ def montar_tela(frame, voltar, janela_principal):
             botao_voltar = tk.Button(
                 frame,
                 image=img_voltar,
-                command=voltar_seguro, # CORRIGIDO
+                command=voltar_seguro,
                 borderwidth=0,
                 highlightthickness=0,
                 bg="#FCB57D",
@@ -110,18 +109,18 @@ def montar_tela(frame, voltar, janela_principal):
         botao_voltar = tk.Button(frame, text="Voltar", font=("Arial", 14), command=voltar_seguro)
         botao_voltar.place(relx=0.025, rely=0.05, anchor="center")
 
-    # Pega altura da janela principal uma vez só
+#Altura janela
     altura_tela = janela_principal.winfo_height()
-    if altura_tela <= 1:  # Se ainda não foi desenhada
+    if altura_tela <= 1:
         altura_tela = janela_principal.winfo_screenheight()
 
-    # Borda branca rodapé - ALTURA FIXA
-    altura_rodape = int(altura_tela * 0.07)  # 7% da altura inicial
+#Borda branca rodapé
+    altura_rodape = int(altura_tela * 0.07)
     rodape = tk.Frame(frame, bg="white", height=altura_rodape)
     rodape.place(relx=0, rely=1, anchor="sw", relwidth=1)
 
-    # Texto ALPHA VERSION - FONTE FIXA
-    tamanho_fonte = int(altura_tela * 0.025)  # 2.5% da altura inicial
+#Texto ALPHA VERSION
+    tamanho_fonte = int(altura_tela * 0.025)
     texto = tk.Label(
         frame,
         text="ALPHA VERSION 1.0",

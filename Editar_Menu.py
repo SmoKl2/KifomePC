@@ -3,25 +3,22 @@ from tkinter import ttk, messagebox, filedialog
 from PIL import Image, ImageTk
 import sqlite3
 import shutil
-import importlib.util
 import sys
 import os
 
-import carrinho_global
-
 def resource_path(relative_path):
     try:
-        base_path = sys._MEIPASS # pasta temporária do PyInstaller
+        base_path = sys._MEIPASS
     except:
         base_path = os.path.abspath(".")
     return os.path.join(base_path, relative_path)
 
 def pasta_app():
     if getattr(sys, 'frozen', False):
-        # Rodando como.exe do PyInstaller
+
         return os.path.dirname(sys.executable)
     else:
-        # Rodando como.py normal
+
         return os.path.abspath(".")
 
 def abrir_detalhe(id_item, nome, preco, descricao, caminho_img):
@@ -39,7 +36,7 @@ def montar_tela(frame, voltar, janela_principal):
     if not hasattr(janela_principal, 'lista_imagens'):
         janela_principal.lista_imagens = []
 
-    # --- BANCO --- USA MESMA PASTA DO EXE
+#Banco
     caminho_banco = os.path.join(pasta_app(), "cardapio.db")
     conn = sqlite3.connect(caminho_banco)
     cursor = conn.cursor()
@@ -54,7 +51,6 @@ def montar_tela(frame, voltar, janela_principal):
     """)
     conn.commit()
 
-    # --- FECHA O BANCO ANTES DE VOLTAR ---
     def voltar_seguro():
         canvas_tela.unbind_all("<MouseWheel>")
         canvas_tela.unbind_all("<Button-4>")
@@ -65,11 +61,11 @@ def montar_tela(frame, voltar, janela_principal):
             pass
         voltar()
 
-    # Cria pasta pra salvar as imagens dos produtos
+#Criar pasta pra salvar as imagens dos produtos
     pasta_imagens = os.path.join(pasta_app(), "Imagens", "Produtos")
     os.makedirs(pasta_imagens, exist_ok=True)
 
-    # --- CANVAS PRINCIPAL COM SCROLL MAIS PRA ESQUERDA ---
+#Rolagem de tela
     canvas_tela = tk.Canvas(frame, bg=cor_fundo, highlightthickness=0)
     scrollbar_tela = ttk.Scrollbar(frame, orient="vertical", command=canvas_tela.yview)
     frame_conteudo = tk.Frame(canvas_tela, bg=cor_fundo)
@@ -78,7 +74,6 @@ def montar_tela(frame, voltar, janela_principal):
     canvas_window = canvas_tela.create_window((0, 0), window=frame_conteudo, anchor="n")
     canvas_tela.configure(yscrollcommand=scrollbar_tela.set)
 
-    # MAIS PRA ESQUERDA: 35% DA LARGURA
     def centralizar(event):
         largura_canvas = canvas_tela.winfo_width()
         canvas_tela.coords(canvas_window, int(largura_canvas * 0.35), 0)
@@ -88,7 +83,7 @@ def montar_tela(frame, voltar, janela_principal):
     canvas_tela.pack(side="left", fill="both", expand=True)
     scrollbar_tela.pack(side="right", fill="y")
 
-    # BIND SCROLL DO MOUSE
+
     def _on_mousewheel(event):
         canvas_tela.yview_scroll(int(-1*(event.delta/120)), "units")
 
@@ -96,7 +91,7 @@ def montar_tela(frame, voltar, janela_principal):
     canvas_tela.bind_all("<Button-4>", lambda e: canvas_tela.yview_scroll(-1, "units"))
     canvas_tela.bind_all("<Button-5>", lambda e: canvas_tela.yview_scroll(1, "units"))
 
-    # Código nome kifome - DENTRO DE frame_conteudo
+#Código nome kifome
     caminho_imagem = resource_path(r"Imagens\nome kifome.png")
     if os.path.exists(caminho_imagem):
         try:
@@ -109,7 +104,7 @@ def montar_tela(frame, voltar, janela_principal):
         except Exception as e:
             print(f"Erro logo: {e}")
 
-    # --- FORM DE CADASTRO ---
+#Form de cadastro
     frame_form = tk.Frame(frame_conteudo, bg="#34495e", bd=2, relief="ridge")
     frame_form.pack(fill="x", pady=(0, 10))
 
@@ -147,7 +142,7 @@ def montar_tela(frame, voltar, janela_principal):
     tk.Button(frame_form, text="Escolher", bg="#3498db", fg="white", bd=0,
              font=("Arial", 10, "bold"), cursor="hand2", command=escolher_imagem).grid(row=4, column=2, padx=5)
 
-    # --- CARDÁPIO ---
+#Cardápio
     frame_cardapio = tk.Frame(frame_conteudo, bg="#34495e", bd=2, relief="ridge")
     frame_cardapio.pack(fill="both", expand=True, pady=10)
 
@@ -165,7 +160,7 @@ def montar_tela(frame, voltar, janela_principal):
     canvas_produtos.pack(side="left", fill="both", expand=True, padx=10, pady=10)
     scrollbar_prod.pack(side="right", fill="y")
 
-    # --- FUNÇÕES ---
+#Funções
     def carregar_produtos(filtro=""):
         for widget in frame_produtos.winfo_children():
             widget.destroy()
@@ -243,7 +238,7 @@ def montar_tela(frame, voltar, janela_principal):
         frame_botoes = tk.Frame(frame_baixo, bg="white")
         frame_botoes.pack(side="right")
 
-        # DELETAR DO BANCO DE DADOS
+#Botão deletar produto
         def deletar_produto():
             if messagebox.askyesno("Deletar", f"Deletar {nome} do cardápio?\n\nIsso vai remover o produto permanentemente!"):
                 try:
@@ -259,12 +254,11 @@ def montar_tela(frame, voltar, janela_principal):
                 except Exception as e:
                     messagebox.showerror("Erro", f"Erro ao deletar: {e}")
 
-        # BOTÃO DELETAR PRODUTO DO BANCO
         btn_deletar = tk.Button(frame_botoes, text="X", bg="#c0392b", fg="white", bd=0,
                  font=("Arial", 12, "bold"), cursor="hand2", command=deletar_produto, width=3)
         btn_deletar.pack(side="left", padx=3, ipady=5)
 
-    # --- BARRA DE PESQUISA --- MOVI PRA CÁ DEPOIS DA FUNÇÃO
+#Barra de Pesquisa
     frame_pesquisa = tk.Frame(frame_conteudo, bg=cor_fundo)
     frame_pesquisa.pack(fill="x", padx=20, pady=(0, 10), before=frame_form)
 
@@ -320,7 +314,7 @@ def montar_tela(frame, voltar, janela_principal):
 
     tk.Label(frame_conteudo, text="", bg=cor_fundo).pack(pady=40)
 
-    # --- BOTÃO VOLTAR POR ÚLTIMO PRA FICAR NA FRENTE ---
+#Código botão voltar
     caminho_voltar = resource_path(r"Imagens\voltar.png")
     if os.path.exists(caminho_voltar):
         try:
@@ -348,17 +342,17 @@ def montar_tela(frame, voltar, janela_principal):
         botao_voltar.place(relx=0.025, rely=0.05, anchor="center")
         botao_voltar.lift()
 
-    # Pega altura da janela principal uma vez só
+#Altura janela
     altura_tela = janela_principal.winfo_height()
     if altura_tela <= 1:
         altura_tela = janela_principal.winfo_screenheight()
 
-    # Borda branca rodapé - ALTURA FIXA
+#Borda branca rodapé
     altura_rodape = int(altura_tela * 0.07)
     rodape = tk.Frame(frame, bg="white", height=altura_rodape)
     rodape.place(relx=0, rely=1, anchor="sw", relwidth=1)
 
-    # Texto ALPHA VERSION - FONTE FIXA
+#Texto ALPHA VERSION
     tamanho_fonte = int(altura_tela * 0.025)
     texto = tk.Label(
         frame,
