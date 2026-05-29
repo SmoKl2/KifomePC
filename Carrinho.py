@@ -23,7 +23,7 @@ def montar_tela(frame, voltar, janela_principal):
     if not hasattr(janela_principal, 'lista_imagens'):
         janela_principal.lista_imagens = []
 
-    # --- BANCO --- FORA DO IF
+    # --- BANCO ---
     conn = sqlite3.connect(resource_path("cardapio.db"))
     cursor = conn.cursor()
     cursor.execute("""
@@ -39,13 +39,72 @@ def montar_tela(frame, voltar, janela_principal):
 
     # --- FECHA O BANCO ANTES DE VOLTAR ---
     def voltar_seguro():
+        canvas_tela.unbind_all("<MouseWheel>")
+        canvas_tela.unbind_all("<Button-4>")
+        canvas_tela.unbind_all("<Button-5>")
         try:
             conn.close()
         except:
             pass
         voltar()
 
-    # Código nome kifome - FORA DO IF
+    # --- CANVAS PRINCIPAL COM SCROLL MAIS PRA ESQUERDA ---
+    canvas_tela = tk.Canvas(frame, bg=cor_fundo, highlightthickness=0)
+    scrollbar_tela = ttk.Scrollbar(frame, orient="vertical", command=canvas_tela.yview)
+    frame_conteudo = tk.Frame(canvas_tela, bg=cor_fundo)
+
+    frame_conteudo.bind("<Configure>", lambda e: canvas_tela.configure(scrollregion=canvas_tela.bbox("all")))
+    canvas_window = canvas_tela.create_window((0, 0), window=frame_conteudo, anchor="n")
+    canvas_tela.configure(yscrollcommand=scrollbar_tela.set)
+
+    # MAIS PRA ESQUERDA: USA 35% EM VEZ DE 50%
+    def centralizar(event):
+        largura_canvas = canvas_tela.winfo_width()
+        canvas_tela.coords(canvas_window, int(largura_canvas * 0.35), 0)
+        canvas_tela.itemconfig(canvas_window, width=min(1000, largura_canvas - 40))
+
+    canvas_tela.bind("<Configure>", centralizar)
+    canvas_tela.pack(side="left", fill="both", expand=True)
+    scrollbar_tela.pack(side="right", fill="y")
+
+    # BIND SCROLL DO MOUSE
+    def _on_mousewheel(event):
+        canvas_tela.yview_scroll(int(-1*(event.delta/120)), "units")
+
+    canvas_tela.bind_all("<MouseWheel>", _on_mousewheel)
+    canvas_tela.bind_all("<Button-4>", lambda e: canvas_tela.yview_scroll(-1, "units"))
+    canvas_tela.bind_all("<Button-5>", lambda e: canvas_tela.yview_scroll(1, "units"))
+
+    # Botão voltar - DENTRO DO frame_conteudo
+    caminho_voltar = resource_path(r"Imagens\voltar.png")
+    if os.path.exists(caminho_voltar):
+        try:
+            img_voltar_original = Image.open(caminho_voltar).convert("RGBA")
+            img_voltar_original = img_voltar_original.resize((60, 60))
+            img_voltar = ImageTk.PhotoImage(img_voltar_original)
+            janela_principal.lista_imagens.append(img_voltar)
+
+            botao_voltar = tk.Button(
+                frame,
+                image=img_voltar,
+                command=voltar_seguro, # CORRIGIDO
+                borderwidth=0,
+                highlightthickness=0,
+                bg="#FCB57D",
+                activebackground="#FCB57D",
+                relief="flat",
+                cursor="hand2"
+            )
+            botao_voltar.place(relx=0.025, rely=0.05, anchor="center")
+        except:
+            botao_voltar = tk.Button(frame, text="Voltar", font=("Arial", 14),
+                                     command=voltar_seguro)
+            botao_voltar.place(relx=0.025, rely=0.05, anchor="center")
+    else:
+        botao_voltar = tk.Button(frame, text="Voltar", font=("Arial", 14), command=voltar_seguro)
+        botao_voltar.place(relx=0.025, rely=0.05, anchor="center")
+
+    # Código nome kifome - CENTRALIZADO
     caminho_imagem = resource_path(r"Imagens\nome kifome.png")
     if os.path.exists(caminho_imagem):
         try:
@@ -53,28 +112,29 @@ def montar_tela(frame, voltar, janela_principal):
             img_original = img_original.resize((600, 220))
             img_tk = ImageTk.PhotoImage(img_original)
             janela_principal.lista_imagens.append(img_tk)
-            label_img = tk.Label(frame, image=img_tk, bg=cor_fundo)
-            label_img.pack(pady=10)
+            label_img = tk.Label(frame_conteudo, image=img_tk, bg=cor_fundo)
+            label_img.pack(pady=(80, 10))
         except Exception as e:
             print(f"Erro logo: {e}")
 
     # --- CARRINHO ---
-    frame_carrinho = tk.Frame(frame, bg="#2c3e50", bd=2, relief="ridge")
-    frame_carrinho.place(relx=0.5, rely=0.55, anchor="center", relwidth=0.85, relheight=0.55)
+    frame_carrinho = tk.Frame(frame_conteudo, bg="#2c3e50", bd=2, relief="ridge")
+    frame_carrinho.pack(pady=20, fill="x", ipady=10)
 
     tk.Label(frame_carrinho, text="MEU CARRINHO", bg="#2c3e50", fg="white",
              font=("Arial", 20, "bold")).pack(pady=15)
 
-    canvas_carrinho = tk.Canvas(frame_carrinho, bg="#2c3e50", highlightthickness=0)
-    scrollbar = ttk.Scrollbar(frame_carrinho, orient="vertical", command=canvas_carrinho.yview)
+    # Canvas interno só pros itens do carrinho
+    canvas_carrinho = tk.Canvas(frame_carrinho, bg="#2c3e50", highlightthickness=0, height=300)
+    scrollbar_itens = ttk.Scrollbar(frame_carrinho, orient="vertical", command=canvas_carrinho.yview)
     frame_itens = tk.Frame(canvas_carrinho, bg="#2c3e50")
 
     frame_itens.bind("<Configure>", lambda e: canvas_carrinho.configure(scrollregion=canvas_carrinho.bbox("all")))
     canvas_carrinho.create_window((0, 0), window=frame_itens, anchor="nw")
-    canvas_carrinho.configure(yscrollcommand=scrollbar.set)
+    canvas_carrinho.configure(yscrollcommand=scrollbar_itens.set)
 
     canvas_carrinho.pack(side="left", fill="both", expand=True, padx=10, pady=10)
-    scrollbar.pack(side="right", fill="y")
+    scrollbar_itens.pack(side="right", fill="y")
 
     # --- FUNÇÕES ---
     def atualizar_carrinho():
@@ -127,8 +187,8 @@ def montar_tela(frame, voltar, janela_principal):
                          command=adicionar_um).pack(side="left", padx=2)
 
     # Total
-    frame_total = tk.Frame(frame, bg="#27ae60", height=70)
-    frame_total.place(relx=0.5, rely=0.85, anchor="center", relwidth=0.85)
+    frame_total = tk.Frame(frame_conteudo, bg="#27ae60", height=70)
+    frame_total.pack(pady=10, fill="x")
     frame_total.pack_propagate(False)
 
     label_total = tk.Label(frame_total, text=f"TOTAL: R$ {carrinho_global.get_total():.2f}",
@@ -139,8 +199,8 @@ def montar_tela(frame, voltar, janela_principal):
         label_total.config(text=f"TOTAL: R$ {carrinho_global.get_total():.2f}")
 
     # Botões de ação
-    frame_botoes = tk.Frame(frame, bg=cor_fundo)
-    frame_botoes.place(relx=0.5, rely=0.93, anchor="center", relwidth=0.85)
+    frame_botoes = tk.Frame(frame_conteudo, bg=cor_fundo)
+    frame_botoes.pack(pady=10, fill="x")
 
     def finalizar():
         if not carrinho_global.carrinho:
@@ -166,47 +226,30 @@ def montar_tela(frame, voltar, janela_principal):
     tk.Button(frame_botoes, text="LIMPAR", bg="#e74c3c", fg="white",
              font=("Arial", 14, "bold"), cursor="hand2", command=limpar).pack(side="right", expand=True, fill="x", padx=(5, 0), ipady=8)
 
-    # Botão voltar
-    caminho_voltar = resource_path(r"Imagens\voltar.png")
-    if os.path.exists(caminho_voltar):
-        try:
-            img_voltar_original = Image.open(caminho_voltar).convert("RGBA")
-            img_voltar_original = img_voltar_original.resize((60, 60))
-            img_voltar = ImageTk.PhotoImage(img_voltar_original)
-            janela_principal.lista_imagens.append(img_voltar)
+    # Pega altura da janela principal uma vez só
+    altura_tela = janela_principal.winfo_height()
+    if altura_tela <= 1:  # Se ainda não foi desenhada
+        altura_tela = janela_principal.winfo_screenheight()
 
-            botao_voltar = tk.Button(
-                frame,
-                image=img_voltar,
-                command=voltar_seguro, # USA voltar_seguro
-                borderwidth=0,
-                highlightthickness=0,
-                bg=cor_fundo,
-                activebackground=cor_fundo,
-                relief="flat",
-                cursor="hand2"
-            )
-            botao_voltar.image = img_voltar
-            botao_voltar.place(relx=0.025, rely=0.05, anchor="center")
-        except:
-            tk.Button(frame, text="Voltar", command=voltar_seguro).place(relx=0.025, rely=0.05)
-    else:
-        tk.Button(frame, text="Voltar", command=voltar_seguro).place(relx=0.025, rely=0.05)
+    # ESPAÇO NO FINAL PRA NÃO FICAR ATRÁS DO RODAPÉ
+    altura_rodape = int(altura_tela * 0.07)  # 7% da altura inicial
+    tk.Label(frame_conteudo, text="", bg=cor_fundo, height=int(altura_rodape/10)).pack()  # ESPAÇADOR
 
-    # Borda branca rodapé
-    rodape = tk.Frame(frame, bg="white", height=55)
+    # Borda branca rodapé - ALTURA FIXA
+    rodape = tk.Frame(frame, bg="white", height=altura_rodape)
     rodape.place(relx=0, rely=1, anchor="sw", relwidth=1)
 
-    # Texto ALPHA VERSION
+    # Texto ALPHA VERSION - FONTE FIXA
+    tamanho_fonte = int(altura_tela * 0.025)  # 2.5% da altura inicial
     texto = tk.Label(
         frame,
         text="ALPHA VERSION 1.0",
         bg="#FEFEFE",
         fg="Black",
-        font=("Dubai", 20, "bold"),
+        font=("Dubai", tamanho_fonte, "bold"),
         padx=0,
         pady=0
     )
-    texto.place(relx=0.07, rely=0.977, anchor="center")
+    texto.place(relx=0.09, rely=0.977, anchor="center")
 
     atualizar_carrinho()

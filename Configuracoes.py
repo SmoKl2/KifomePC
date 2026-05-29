@@ -110,18 +110,25 @@ def montar_tela(frame, voltar, janela_principal):
         botao_voltar = tk.Button(frame, text="Voltar", font=("Arial", 14), command=voltar_seguro)
         botao_voltar.place(relx=0.025, rely=0.05, anchor="center")
 
-    #Borda branca rodapé
-    rodape = tk.Frame(frame, bg="white", height=55)
+    # Pega altura da janela principal uma vez só
+    altura_tela = janela_principal.winfo_height()
+    if altura_tela <= 1:  # Se ainda não foi desenhada
+        altura_tela = janela_principal.winfo_screenheight()
+
+    # Borda branca rodapé - ALTURA FIXA
+    altura_rodape = int(altura_tela * 0.07)  # 7% da altura inicial
+    rodape = tk.Frame(frame, bg="white", height=altura_rodape)
     rodape.place(relx=0, rely=1, anchor="sw", relwidth=1)
 
-    #Texto ALPHA VERSION
+    # Texto ALPHA VERSION - FONTE FIXA
+    tamanho_fonte = int(altura_tela * 0.025)  # 2.5% da altura inicial
     texto = tk.Label(
         frame,
         text="ALPHA VERSION 1.0",
-        bg="white",
+        bg="#FEFEFE",
         fg="Black",
-        font=("Dubai", 20, "bold"),
+        font=("Dubai", tamanho_fonte, "bold"),
         padx=0,
         pady=0
     )
-    texto.place(relx=0.07, rely=0.977, anchor="center")
+    texto.place(relx=0.09, rely=0.977, anchor="center")
