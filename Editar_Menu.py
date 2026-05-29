@@ -7,6 +7,8 @@ import importlib.util
 import sys
 import os
 
+import carrinho_global
+
 def resource_path(relative_path):
     try:
         base_path = sys._MEIPASS # pasta temporária do PyInstaller
@@ -14,18 +16,32 @@ def resource_path(relative_path):
         base_path = os.path.abspath(".")
     return os.path.join(base_path, relative_path)
 
+def pasta_app():
+    if getattr(sys, 'frozen', False):
+        # Rodando como.exe do PyInstaller
+        return os.path.dirname(sys.executable)
+    else:
+        # Rodando como.py normal
+        return os.path.abspath(".")
+
+def abrir_detalhe(id_item, nome, preco, descricao, caminho_img):
+    pass
+
 def montar_tela(frame, voltar, janela_principal):
     for widget in frame.winfo_children():
         widget.destroy()
 
     cor_fundo = "#FCB57D"
+    cor_cardapio = "#FCB57D"
+
     frame.config(bg=cor_fundo)
 
     if not hasattr(janela_principal, 'lista_imagens'):
         janela_principal.lista_imagens = []
 
-    # --- BANCO ---
-    conn = sqlite3.connect(resource_path("cardapio.db"))
+    # --- BANCO --- USA MESMA PASTA DO EXE
+    caminho_banco = os.path.join(pasta_app(), "cardapio.db")
+    conn = sqlite3.connect(caminho_banco)
     cursor = conn.cursor()
     cursor.execute("""
         CREATE TABLE IF NOT EXISTS produtos (
@@ -50,7 +66,7 @@ def montar_tela(frame, voltar, janela_principal):
         voltar()
 
     # Cria pasta pra salvar as imagens dos produtos
-    pasta_imagens = r"Imagens\Produtos"
+    pasta_imagens = os.path.join(pasta_app(), "Imagens", "Produtos")
     os.makedirs(pasta_imagens, exist_ok=True)
 
     # --- CANVAS PRINCIPAL COM SCROLL MAIS PRA ESQUERDA ---
@@ -150,62 +166,119 @@ def montar_tela(frame, voltar, janela_principal):
     scrollbar_prod.pack(side="right", fill="y")
 
     # --- FUNÇÕES ---
-    def criar_card_produto(pai, id_item, nome, preco, descricao, caminho_img):
-        card = tk.Frame(pai, bg="white", bd=2, relief="raised")
-        card.pack(fill="x", pady=5, padx=5)
+    def carregar_produtos(filtro=""):
+        for widget in frame_produtos.winfo_children():
+            widget.destroy()
 
-        frame_conteudo_card = tk.Frame(card, bg="white")
-        frame_conteudo_card.pack(fill="both", expand=True, padx=10, pady=10)
+        if filtro:
+            cursor.execute("""
+                SELECT id, nome, preco, descricao, imagem
+                FROM produtos
+                WHERE nome LIKE? OR descricao LIKE?
+                ORDER BY nome
+            """, (f"%{filtro}%", f"%{filtro}%"))
+        else:
+            cursor.execute("SELECT id, nome, preco, descricao, imagem FROM produtos ORDER BY nome")
+
+        produtos = cursor.fetchall()
+
+        if not produtos:
+            texto = "Nenhum produto encontrado" if filtro else "Nenhum produto cadastrado"
+            tk.Label(frame_produtos, text=texto,
+                    bg=cor_cardapio, fg="#7f8c8d", font=("Arial", 16)).pack(pady=50)
+        else:
+            for prod in produtos:
+                criar_card_produto(frame_produtos, prod[0], prod[1], prod[2], prod[3], prod[4])
+
+    def criar_card_produto(pai, id_item, nome, preco, descricao, caminho_img):
+        card = tk.Frame(pai, bg="white", bd=2, relief="raised", cursor="hand2")
+        card.pack(fill="x", pady=8, padx=5)
+
+        def ao_clicar(e):
+            abrir_detalhe(id_item, nome, preco, descricao, caminho_img)
+
+        card.bind("<Button-1>", ao_clicar)
+        card.bind("<Enter>", lambda e: card.config(bg="#f8f9fa"))
+        card.bind("<Leave>", lambda e: card.config(bg="white"))
+
+        frame_conteudo_card = tk.Frame(card, bg="white", cursor="hand2")
+        frame_conteudo_card.pack(fill="both", expand=True, padx=15, pady=15)
+        frame_conteudo_card.bind("<Button-1>", ao_clicar)
 
         if caminho_img and os.path.exists(caminho_img):
             try:
                 img_prod = Image.open(caminho_img).convert("RGBA")
-                img_prod = img_prod.resize((100, 100))
+                img_prod = img_prod.resize((120, 120))
                 img_prod_tk = ImageTk.PhotoImage(img_prod)
                 janela_principal.lista_imagens.append(img_prod_tk)
-                tk.Label(frame_conteudo_card, image=img_prod_tk, bg="white").pack(side="left", padx=(0, 15))
+                label_img = tk.Label(frame_conteudo_card, image=img_prod_tk, bg="white", cursor="hand2")
+                label_img.pack(side="left", padx=(0, 20))
+                label_img.bind("<Button-1>", ao_clicar)
             except:
                 pass
 
-        frame_textos = tk.Frame(frame_conteudo_card, bg="white")
+        frame_textos = tk.Frame(frame_conteudo_card, bg="white", cursor="hand2")
         frame_textos.pack(side="left", fill="both", expand=True)
+        frame_textos.bind("<Button-1>", ao_clicar)
 
-        tk.Label(frame_textos, text=nome, bg="white", fg="#2c3e50",
-                font=("Arial", 16, "bold"), anchor="w").pack(fill="x")
+        label_nome = tk.Label(frame_textos, text=nome, bg="white", fg="#2c3e50",
+                font=("Arial", 18, "bold"), anchor="w", cursor="hand2")
+        label_nome.pack(fill="x")
+        label_nome.bind("<Button-1>", ao_clicar)
 
-        tk.Label(frame_textos, text=descricao, bg="white", fg="#7f8c8d",
-                font=("Arial", 11), anchor="w", wraplength=600).pack(fill="x", pady=(5, 0))
+        label_desc = tk.Label(frame_textos, text=descricao, bg="white", fg="#7f8c8d",
+                font=("Arial", 12), anchor="w", wraplength=600, justify="left", cursor="hand2")
+        label_desc.pack(fill="x", pady=(8, 0))
+        label_desc.bind("<Button-1>", ao_clicar)
 
-        tk.Label(frame_textos, text=f"R$ {preco:.2f}", bg="white", fg="#27ae60",
-                font=("Arial", 18, "bold"), anchor="w").pack(fill="x", pady=(10, 0))
+        frame_baixo = tk.Frame(frame_textos, bg="white", cursor="hand2")
+        frame_baixo.pack(fill="x", pady=(12, 0))
+        frame_baixo.bind("<Button-1>", ao_clicar)
 
-        def deletar():
-            if messagebox.askyesno("Deletar", f"Deletar {nome}?"):
-                cursor.execute("DELETE FROM produtos WHERE id=?", (id_item,))
-                conn.commit()
-                if caminho_img and os.path.exists(caminho_img):
-                    try:
-                        os.remove(caminho_img)
-                    except:
-                        pass
-                carregar_produtos()
+        label_preco = tk.Label(frame_baixo, text=f"R$ {preco:.2f}", bg="white", fg="#27ae60",
+                font=("Arial", 22, "bold"), cursor="hand2")
+        label_preco.pack(side="left")
+        label_preco.bind("<Button-1>", ao_clicar)
 
-        tk.Button(frame_conteudo_card, text="X", bg="#e74c3c", fg="white", bd=0,
-                 font=("Arial", 10, "bold"), cursor="hand2", command=deletar).pack(side="right")
+        frame_botoes = tk.Frame(frame_baixo, bg="white")
+        frame_botoes.pack(side="right")
 
-    def carregar_produtos():
-        for widget in frame_produtos.winfo_children():
-            widget.destroy()
+        # DELETAR DO BANCO DE DADOS
+        def deletar_produto():
+            if messagebox.askyesno("Deletar", f"Deletar {nome} do cardápio?\n\nIsso vai remover o produto permanentemente!"):
+                try:
+                    cursor.execute("DELETE FROM produtos WHERE id=?", (id_item,))
+                    conn.commit()
+                    if caminho_img and os.path.exists(caminho_img):
+                        try:
+                            os.remove(caminho_img)
+                        except:
+                            pass
+                    carregar_produtos()
+                    messagebox.showinfo("Sucesso", f"{nome} deletado do cardápio!")
+                except Exception as e:
+                    messagebox.showerror("Erro", f"Erro ao deletar: {e}")
 
-        cursor.execute("SELECT id, nome, preco, descricao, imagem FROM produtos ORDER BY nome")
-        produtos = cursor.fetchall()
+        # BOTÃO DELETAR PRODUTO DO BANCO
+        btn_deletar = tk.Button(frame_botoes, text="X", bg="#c0392b", fg="white", bd=0,
+                 font=("Arial", 12, "bold"), cursor="hand2", command=deletar_produto, width=3)
+        btn_deletar.pack(side="left", padx=3, ipady=5)
 
-        if not produtos:
-            tk.Label(frame_produtos, text="Nenhum produto cadastrado",
-                    bg="#34495e", fg="#7f8c8d", font=("Arial", 14)).pack(pady=50)
-        else:
-            for prod in produtos:
-                criar_card_produto(frame_produtos, prod[0], prod[1], prod[2], prod[3], prod[4])
+    # --- BARRA DE PESQUISA --- MOVI PRA CÁ DEPOIS DA FUNÇÃO
+    frame_pesquisa = tk.Frame(frame_conteudo, bg=cor_fundo)
+    frame_pesquisa.pack(fill="x", padx=20, pady=(0, 10), before=frame_form)
+
+    tk.Label(frame_pesquisa, text="Pesquisar:", bg=cor_fundo, fg="#2c3e50",
+             font=("Arial", 12, "bold")).pack(side="left", padx=(0, 10))
+
+    entry_pesquisa = tk.Entry(frame_pesquisa, font=("Arial", 12), width=40)
+    entry_pesquisa.pack(side="left", fill="x", expand=True, ipady=5)
+
+    def pesquisar(event=None):
+        termo = entry_pesquisa.get().strip()
+        carregar_produtos(termo)
+
+    entry_pesquisa.bind("<KeyRelease>", pesquisar)
 
     def adicionar_produto():
         nome = entry_nome.get().strip()
@@ -265,7 +338,7 @@ def montar_tela(frame, voltar, janela_principal):
             botao_voltar.image = img_voltar
             botao_voltar.bind("<Button-1>", lambda e: voltar_seguro())
             botao_voltar.place(relx=0.025, rely=0.05, anchor="center")
-            botao_voltar.lift() # JOGA PRA FRENTE
+            botao_voltar.lift()
         except:
             botao_voltar = tk.Button(frame, text="Voltar", font=("Arial", 14), command=voltar_seguro)
             botao_voltar.place(relx=0.025, rely=0.05, anchor="center")
@@ -277,16 +350,16 @@ def montar_tela(frame, voltar, janela_principal):
 
     # Pega altura da janela principal uma vez só
     altura_tela = janela_principal.winfo_height()
-    if altura_tela <= 1:  # Se ainda não foi desenhada
+    if altura_tela <= 1:
         altura_tela = janela_principal.winfo_screenheight()
 
     # Borda branca rodapé - ALTURA FIXA
-    altura_rodape = int(altura_tela * 0.07)  # 7% da altura inicial
+    altura_rodape = int(altura_tela * 0.07)
     rodape = tk.Frame(frame, bg="white", height=altura_rodape)
     rodape.place(relx=0, rely=1, anchor="sw", relwidth=1)
 
     # Texto ALPHA VERSION - FONTE FIXA
-    tamanho_fonte = int(altura_tela * 0.025)  # 2.5% da altura inicial
+    tamanho_fonte = int(altura_tela * 0.025)
     texto = tk.Label(
         frame,
         text="ALPHA VERSION 1.0",

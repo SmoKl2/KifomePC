@@ -13,6 +13,14 @@ def resource_path(relative_path):
         base_path = os.path.abspath(".")
     return os.path.join(base_path, relative_path)
 
+def pasta_app():
+    if getattr(sys, 'frozen', False):
+        # Rodando como.exe do PyInstaller
+        return os.path.dirname(sys.executable)
+    else:
+        # Rodando como.py normal
+        return os.path.abspath(".")
+
 def montar_tela(frame, voltar, janela_principal):
     for widget in frame.winfo_children():
         widget.destroy()
@@ -25,8 +33,9 @@ def montar_tela(frame, voltar, janela_principal):
     if not hasattr(janela_principal, 'lista_imagens'):
         janela_principal.lista_imagens = []
 
-    # --- BANCO ---
-    conn = sqlite3.connect(resource_path("cardapio.db"))
+    # --- BANCO --- CORRIGIDO: USA pasta_app()
+    caminho_banco = os.path.join(pasta_app(), "cardapio.db")
+    conn = sqlite3.connect(caminho_banco)
     cursor = conn.cursor()
     cursor.execute("""
         CREATE TABLE IF NOT EXISTS produtos (
@@ -196,18 +205,16 @@ def montar_tela(frame, voltar, janela_principal):
         frame_central = tk.Frame(container, bg=cor_fundo_detalhe)
         frame_central.pack(expand=True)
 
-        # Imagem grande - ZOOM
-        if caminho_img:
-            caminho_img_abs = resource_path(caminho_img)
-            if os.path.exists(caminho_img_abs):
-                try:
-                    img_prod = Image.open(caminho_img_abs).convert("RGBA")
-                    img_prod = img_prod.resize((500, 500))
-                    img_prod_tk = ImageTk.PhotoImage(img_prod)
-                    janela_principal.lista_imagens.append(img_prod_tk)
-                    tk.Label(frame_central, image=img_prod_tk, bg=cor_fundo_detalhe).pack(pady=20)
-                except:
-                    pass
+        # Imagem grande - ZOOM - CORRIGIDO: NÃO USA resource_path
+        if caminho_img and os.path.exists(caminho_img):
+            try:
+                img_prod = Image.open(caminho_img).convert("RGBA")
+                img_prod = img_prod.resize((500, 500))
+                img_prod_tk = ImageTk.PhotoImage(img_prod)
+                janela_principal.lista_imagens.append(img_prod_tk)
+                tk.Label(frame_central, image=img_prod_tk, bg=cor_fundo_detalhe).pack(pady=20)
+            except:
+                pass
 
         # Nome
         tk.Label(frame_central, text=nome, bg=cor_fundo_detalhe, fg="#2c3e50",
@@ -266,19 +273,18 @@ def montar_tela(frame, voltar, janela_principal):
         frame_conteudo.pack(fill="both", expand=True, padx=15, pady=15)
         frame_conteudo.bind("<Button-1>", ao_clicar)
 
-        if caminho_img:
-            caminho_img_abs = resource_path(caminho_img)
-            if os.path.exists(caminho_img_abs):
-                try:
-                    img_prod = Image.open(caminho_img_abs).convert("RGBA")
-                    img_prod = img_prod.resize((120, 120))
-                    img_prod_tk = ImageTk.PhotoImage(img_prod)
-                    janela_principal.lista_imagens.append(img_prod_tk)
-                    label_img = tk.Label(frame_conteudo, image=img_prod_tk, bg="white", cursor="hand2")
-                    label_img.pack(side="left", padx=(0, 20))
-                    label_img.bind("<Button-1>", ao_clicar)
-                except:
-                    pass
+        # CORRIGIDO: NÃO USA resource_path NA IMAGEM DO PRODUTO
+        if caminho_img and os.path.exists(caminho_img):
+            try:
+                img_prod = Image.open(caminho_img).convert("RGBA")
+                img_prod = img_prod.resize((120, 120))
+                img_prod_tk = ImageTk.PhotoImage(img_prod)
+                janela_principal.lista_imagens.append(img_prod_tk)
+                label_img = tk.Label(frame_conteudo, image=img_prod_tk, bg="white", cursor="hand2")
+                label_img.pack(side="left", padx=(0, 20))
+                label_img.bind("<Button-1>", ao_clicar)
+            except:
+                pass
 
         frame_textos = tk.Frame(frame_conteudo, bg="white", cursor="hand2")
         frame_textos.pack(side="left", fill="both", expand=True)
