@@ -1,2 +1,0 @@
-
-código kifomePC criar executável: pyinstaller --onefile --windowed --name "Kifome" --icon "D:\Programacao\KifomePC\Imagens\icone.ico" --hidden-import tkinter.ttk --hidden-import tkinter.messagebox --hidden-import tkinter.filedialog --add-data "Imagens;Imagens" Main.py
