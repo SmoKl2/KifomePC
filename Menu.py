@@ -23,7 +23,7 @@ def montar_tela(frame, voltar, janela_principal):
     for widget in frame.winfo_children():
         widget.destroy()
 
-    # --- SISTEMA DE TEMAS - SÓ LÊ O ESTADO ---
+#SISTEMA DE TEMAS
     if not hasattr(janela_principal, 'tema_escuro'):
         janela_principal.tema_escuro = False
 
